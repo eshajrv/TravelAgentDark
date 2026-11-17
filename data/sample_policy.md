@@ -12,4 +12,7 @@ otherwise this file.
 7. Never book a date the traveler said they can't do.
 8. International trips always need a manager's approval: ESCALATE.
 9. Book at least 7 days before departure.
-10. Each booking uses a one-time card limited to the fare plus $5.
+10. Every booking is a Stripe Link spend request that a human approves on their phone; the
+    agent then gets a single-use card capped at the fare.
+11. Stripe Link allows at most $500 per request, so any fare over $500 must ESCALATE, even if
+    it is under the trip's fare cap.

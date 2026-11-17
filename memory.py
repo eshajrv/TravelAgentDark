@@ -46,6 +46,7 @@ OUTPUT = ROOT / "output"
 TRIPS_FILE = OUTPUT / "trips.json"      # cache, so extraction runs once
 LESSONS_FILE = OUTPUT / "lessons.json"  # every lesson learned, by night
 TICKS_START_HOUR = 22                   # tick 0 = 10:00 PM, 4 ticks per hour
+LINK_MAX = 500.0                        # Stripe Link's per-request cap (see BUILD_PLAN.md)
 
 OUTPUT.mkdir(exist_ok=True)
 
@@ -245,6 +246,8 @@ def recall_context(trip_id: str) -> str:
         f"Fly on: {', '.join(trip.dates) or 'not specified'}.",
         f"Never book: {', '.join(trip.banned_dates) or 'no banned dates'}.",
         f"Fare cap: ${trip.cap:.0f}. Over the cap means ESCALATE, never BUY.",
+        f"Payment: Stripe Link, max ${LINK_MAX:.0f} per request. Over ${LINK_MAX:.0f} means ESCALATE "
+        "even if under the cap.",
         "",
         "Policy (from Cognee):",
         policy or "(nothing found)",
