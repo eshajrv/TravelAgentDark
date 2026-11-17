@@ -1,4 +1,4 @@
-"""Red-Eye memory layer (Esha): Cognee holds the policy, the workspace and the lessons.
+"""Flighthawk AI memory layer (Esha): Cognee holds the policy, the workspace and the lessons.
 
 Public functions (the contract in models.py):
     get_trips() -> list[Trip]
@@ -45,7 +45,7 @@ import cognee  # noqa: E402  (needs the env loaded first)
 from models import Decision, Trace, Trip  # noqa: E402
 from output import grade_snapshot, write_snapshot  # noqa: E402
 
-DATASET = "redeye"
+DATASET = "redeye"  # Retained namespace so the rename preserves learned memory.
 ROOT = Path(__file__).parent
 DATA = ROOT / "data"
 OUTPUT = ROOT / "output"

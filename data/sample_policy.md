@@ -1,4 +1,4 @@
-# Red-Eye travel policy (stand-in)
+# Flighthawk AI travel policy (stand-in)
 
 Stand-in until Aman's `data/policy.md` is ready. `memory.py` uses `policy.md` if it exists,
 otherwise this file.

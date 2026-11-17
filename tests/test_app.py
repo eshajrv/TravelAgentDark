@@ -12,7 +12,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 class DashboardTests(unittest.TestCase):
     def test_exported_team_budget_in_morning_brief(self):
-        with tempfile.TemporaryDirectory() as folder, patch.dict(os.environ, {"REDEYE_OUTPUT_DIR": folder}):
+        with tempfile.TemporaryDirectory() as folder, patch.dict(os.environ, {"FLIGHTHAWK_OUTPUT_DIR": folder}):
             (Path(folder) / "night_1.json").write_text(json.dumps({"traces": [], "team_budget": {"budget": 1500, "booked": 456.75}}))
             at = AppTest.from_file(str(ROOT / "app.py"), default_timeout=20).run()
             at.radio(key="source").set_value("Runner output").run()

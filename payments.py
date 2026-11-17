@@ -32,7 +32,7 @@ class LinkPayments:
     def __init__(self, *, executable='link-cli', merchant_url=None, card_dir=None, executor=None):
         self.executable=executable
         self.merchant_url=merchant_url or os.getenv('LINK_MERCHANT_URL','')
-        self.card_dir=Path(card_dir or tempfile.mkdtemp(prefix='redeye-link-'))
+        self.card_dir=Path(card_dir or tempfile.mkdtemp(prefix='flighthawk-link-'))
         self.card_dir.mkdir(parents=True,exist_ok=True,mode=0o700)
         self.executor=executor or subprocess.run
     def _call(self,args):
@@ -66,7 +66,7 @@ class LinkPayments:
         value=cents(amount)
         if value>50000: raise PaymentError('Link project limit is $500')
         if not self.merchant_url.startswith('https://'): raise PaymentError('Set LINK_MERCHANT_URL to the actual merchant HTTPS URL')
-        context=f'Red-Eye TEST ONLY: {reason}. Requesting a test credential for a simulated flight. No real booking or purchase will be made.'
+        context=f'Flighthawk AI TEST ONLY: {reason}. Requesting a test credential for a simulated flight. No real booking or purchase will be made.'
         args=['spend-request','create','--test','--merchant-name',merchant,'--merchant-url',self.merchant_url,'--context',context,'--amount',str(value),'--currency','usd','--idempotency-key',operation_id or uuid.uuid4().hex]
         return self._safe(self._call(args))
     def get_payment(self,request_id):

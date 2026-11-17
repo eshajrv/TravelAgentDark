@@ -1,16 +1,16 @@
-# Red-Eye — Build Plan
+# Flighthawk AI — Build Plan
 
 **Agents After Dark Build Night · Berkeley Haas · Nov 16, 2026 (4:00–9:00 PM)**
 Prize targets: **Best Use of Cognee** (primary), **Best Overall**.
 
-> Red-Eye is an overnight travel agent for teams too small to have a travel person.
+> Flighthawk AI is an overnight travel agent for teams too small to have a travel person.
 > It reads the team's Slack and email for upcoming work trips, watches fares all night,
 > checks every fare against company policy stored in **Cognee**, and pays with a
 > single-use card through **Stripe Link** after a human approves on their phone. Every
 > decision is logged, and `cognee.improve()` turns those logs into lessons so the next
 > night's agent is smarter.
 
-"Red-Eye" is a placeholder name.
+The product name is **Flighthawk AI**.
 
 ---
 
@@ -161,7 +161,7 @@ workspace.json + policy.md
 ## 5. Repo layout
 
 ```
-TravelAgentDark/
+flighthawk-ai/
 ├── BUILD_PLAN.md
 ├── README.md
 ├── requirements.txt          # cognee, streamlit, openai, python-dotenv
@@ -306,7 +306,7 @@ Before anyone codes, agree on the data shapes and function names so the three pi
 | Time | Show | Say |
 |---|---|---|
 | 0:00 | Title | "Your startup has three trips buried in Slack and no one to book them." |
-| 0:20 | Slack → trip cards | "Red-Eye pulls out who, where, when, and the constraints." |
+| 0:20 | Slack → trip cards | "Flighthawk AI pulls out who, where, when, and the constraints." |
 | 0:40 | Policy graph | "Company rules live in a Cognee graph the agent must follow." |
 | 1:00 | Night 1 fare timeline | "It bought at $412. The night's low was $287: $125 of regret." |
 | 1:30 | `improve()` + before/after `recall` | "Cognee turns the night's traces into a lesson." |
