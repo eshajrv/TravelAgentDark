@@ -1,0 +1,17 @@
+{
+  "_note": "Stand-in until Aman's data/workspace.json is ready. memory.py uses workspace.json if it exists, otherwise this file.",
+  "slack": [
+    {"channel": "#general", "user": "Esha", "ts": "2026-11-12T10:02:00", "text": "Got the acceptance email! I'm presenting at NeurIPS in New York, so I need to fly SFO to JFK."},
+    {"channel": "#general", "user": "Aman", "ts": "2026-11-12T10:05:00", "text": "congrats!! when do you need to be there?"},
+    {"channel": "#general", "user": "Esha", "ts": "2026-11-12T10:07:00", "text": "Talk is Dec 8, so flying out Dec 6 or 7 works."},
+    {"channel": "#sales", "user": "Rohan", "ts": "2026-11-13T14:20:00", "text": "Acme wants an onsite in Chicago. I can do Dec 2 to Dec 4, but not the 3rd, I have my sister's thing that day."},
+    {"channel": "#sales", "user": "Aman", "ts": "2026-11-13T14:22:00", "text": "nice, that's a big customer. book it whenever"},
+    {"channel": "#random", "user": "Priya", "ts": "2026-11-14T09:00:00", "text": "Anyone been to the Design Systems Summit in London? Thinking of going Dec 10."},
+    {"channel": "#random", "user": "Aman", "ts": "2026-11-14T09:03:00", "text": "never been, looks fun though"},
+    {"channel": "#random", "user": "Priya", "ts": "2026-11-14T09:05:00", "text": "Ok I'm going, flying SFO to LHR on Dec 9 or 10."}
+  ],
+  "email": [
+    {"from": "program-chairs@neurips.cc", "to": "esha@redeye.dev", "date": "2026-11-11", "subject": "Your paper has been accepted", "body": "Congratulations, your paper has been accepted for an oral presentation on December 8 in New York."},
+    {"from": "ops@acme.com", "to": "rohan@redeye.dev", "date": "2026-11-13", "subject": "Onsite in Chicago", "body": "We'd love to host you at our Chicago office the week of Dec 1. Let us know which day works."}
+  ]
+}
