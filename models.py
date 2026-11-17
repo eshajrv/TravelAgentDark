@@ -55,10 +55,12 @@ class Trace:
 # Function contracts (signatures only; implementations live in each owner's file)
 #
 # Esha — memory.py
+#   setup(reset: bool = False) -> None         # once before Night 1; one Cognee script at a time
 #   get_trips() -> list[Trip]
 #   recall_context(trip_id: str) -> str          # rules + constraints + lessons, plain text
-#   log_trace(trace: Trace) -> None
+#   log_trace(trace: Trace) -> None             # each trip/tick; runner owns UI exports
 #   end_night(night: int) -> list[str]           # adds hindsight, calls cognee.improve(), returns new lessons
+#   Optional runner handoffs: configure_run(run_id, output_dir), prepare_hindsight(snapshot)
 #
 # Rohan — sim/fares.py, agent.py, payments.py, run_night.py
 #   get_fare(trip: Trip, night: int, tick: int) -> float
