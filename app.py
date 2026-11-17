@@ -14,42 +14,54 @@ from ui_data import clock_label, comparison, digest, load_nights, purchases, sta
 ROOT = Path(__file__).resolve().parent
 DEMO = ROOT / "demo" / "fixtures"
 OUTPUT = Path(os.environ.get("REDEYE_OUTPUT_DIR", str(ROOT / "output")))
-COLORS = {"BUY": "#74E2C0", "WAIT": "#8CACE6", "ESCALATE": "#FFBE7A"}
+COLORS = {"BUY": "#2448A6", "WAIT": "#98A0AC", "ESCALATE": "#A65A24"}
 
-st.set_page_config(page_title="Red-Eye / Overnight travel desk", page_icon="🌙", layout="wide")
+st.set_page_config(page_title="Red-Eye / Travel overview", page_icon="R", layout="wide")
 st.markdown("""<style>
-.block-container {max-width:1440px;padding-top:2.4rem;padding-bottom:3rem}
-h1 {font-size:3.2rem!important;letter-spacing:-.07em;font-weight:750!important}
-h2 {letter-spacing:-.035em} h3 {letter-spacing:-.02em}
-[data-testid="stMetricValue"] {font-variant-numeric:tabular-nums;font-weight:650}
-[data-testid="stMetricLabel"] {color:#A6B8CD}
-[data-testid="stSidebar"] {border-right:1px solid #243246}
-[data-testid="stVerticalBlockBorderWrapper"] {border-radius:16px}
-.eyebrow {color:#74E2C0;font-size:.75rem;letter-spacing:.18em;font-weight:700}
-.lede {color:#A6B8CD;font-size:1.1rem;max-width:820px;margin-bottom:1.6rem}
+.block-container {max-width:1420px;padding:2.4rem 3rem 3rem}
+h1 {font-size:2rem!important;letter-spacing:-.035em;font-weight:600!important;padding-bottom:.3rem!important}
+h2 {font-size:1.35rem!important;font-weight:600!important;letter-spacing:-.025em}
+h3 {font-size:1.15rem!important;font-weight:600!important;letter-spacing:-.02em}
+h4 {font-size:.95rem!important;font-weight:600!important}
+p, label {font-size:.88rem!important;line-height:1.55}
+[data-testid="stCaptionContainer"] p {font-size:.76rem!important;color:#626975;line-height:1.5}
+[data-testid="stMetricValue"] {font-size:2rem;font-variant-numeric:tabular-nums;font-weight:500;letter-spacing:-.035em}
+[data-testid="stMetricLabel"] {color:#626975}
+[data-testid="stSidebar"] {border-right:1px solid #E2E5E9;background:#F8F9FA;min-width:230px;max-width:260px}
+[data-testid="stSidebar"] h2 {font-size:1.3rem!important;letter-spacing:.03em}
+[data-testid="stVerticalBlockBorderWrapper"] {border-radius:5px!important;border-color:#DFE3E8!important;box-shadow:none!important}
+[data-baseweb="tab-list"] {gap:1.8rem;border-bottom:1px solid #DFE3E8}
+[data-baseweb="tab"] {padding-left:0;padding-right:0}
+[data-baseweb="select"] > div, button {border-radius:4px!important}
+[data-testid="stAlert"] {border-radius:4px;padding:.45rem .65rem}
+.eyebrow {color:#626975;font-size:.68rem;letter-spacing:.1em;font-weight:600;margin-bottom:.45rem}
+.lede {color:#626975;font-size:.88rem;max-width:820px;margin-bottom:.4rem}
+@media(max-width:850px){.block-container{padding:2rem 1rem}h1{font-size:1.7rem!important}}
 </style>""", unsafe_allow_html=True)
 
 with st.sidebar:
-    st.markdown("## ◐ Red-Eye")
-    st.caption("THE OVERNIGHT TRAVEL DESK")
+    st.markdown("## RED–EYE")
+    st.caption("Northstar Labs")
     st.divider()
     source = st.radio("Data source", ["Demo fixtures", "Runner output"], key="source")
     demo = source == "Demo fixtures"
     nights = load_nights(DEMO if demo else OUTPUT, demo=demo)
-    st.caption("Synthetic workspace · simulated fares" if demo else "Reading exported results from the night runner")
+    st.caption("Sample workspace and simulated fares" if demo else "Exported night results")
     if st.button("Refresh results", width="stretch"):
         st.rerun()
     st.divider()
-    st.markdown("**Policy first.**")
-    st.caption("Unavailable dates stay unavailable. Over-budget fares need a human.")
-    st.markdown("**Payments: Stripe Link**")
-    st.caption("Integration owned by the runner. This dashboard never charges a card or approves a purchase.")
+    st.markdown("**Workspace**")
+    st.caption("Flight requests\n\nUSD · Economy fares")
+    st.markdown("**Connections**")
+    st.caption("Cognee · Context & lessons\n\nStripe Link · Payment handoff")
+    with st.expander("About this view"):
+        st.caption("Read-only results. Purchase decisions are separate from payment and booking confirmations. Unavailable dates and fare caps always apply.")
     st.divider()
-    st.caption("Northstar Labs / Agents After Dark")
+    st.caption("Agents After Dark / November 2026")
 
-st.markdown('<div class="eyebrow">NORTHSTAR LABS / TRAVEL OPERATIONS</div>', unsafe_allow_html=True)
-st.title("Good morning. Here’s your night.")
-st.markdown('<div class="lede">Travel plans become clear decisions. See what the agent chose, why it waited, and what needs your attention.</div>', unsafe_allow_html=True)
+st.markdown('<div class="eyebrow">TRAVEL OPERATIONS</div>', unsafe_allow_html=True)
+st.title("Travel overview")
+st.markdown('<div class="lede">Overnight fare decisions, policy exceptions, and the morning handoff.</div>', unsafe_allow_html=True)
 
 if not nights:
     st.info("No night results yet. Choose Demo fixtures to explore the app, or refresh after the runner exports a night.")
@@ -83,18 +95,18 @@ stats[3].metric("Selected fare total", f"${sum(t.price for t in buys.values()):,
 overview, decisions, workspace, pitch = st.tabs(["Overnight overview", "Decision log", "Workspace & policy", "Demo & pitch"])
 
 with overview:
-    st.subheader("The travel desk")
+    st.subheader("Itineraries")
     if not trip_map:
         st.info("Trip details have not been exported. The chart and log still work from trace IDs; no sample trip details are substituted.")
     for start in range(0, len(night.trips), 3):
         for col, trip in zip(st.columns(3), night.trips[start:start + 3]):
             with col, st.container(border=True):
                 status = latest.get(trip.id)
-                st.caption(f"{trip.traveler.upper()} / {trip.trip_type.replace('_', ' ').upper()}")
+                st.caption(f"{trip.traveler} / {trip.trip_type.replace('_', ' ').title()}")
                 st.markdown(f"### {trip.origin} → {trip.dest}")
                 st.write("Available: " + ", ".join(trip.dates))
                 if trip.banned_dates:
-                    st.warning("Unavailable: " + ", ".join(trip.banned_dates))
+                    st.caption("Unavailable: " + ", ".join(trip.banned_dates))
                 st.caption(f"Economy fare cap ${trip.cap:,.0f}")
                 if status:
                     label = {"BUY":"Purchase selected", "WAIT":"Watching fares", "ESCALATE":"Needs human review"}[status.decision.action]
@@ -105,7 +117,7 @@ with overview:
 
     chart_col, lesson_col = st.columns([2, 1], gap="large")
     with chart_col:
-        st.subheader("The night, one decision at a time")
+        st.subheader("Fare history")
         ids = sorted(set(trip_map) | {t.trip_id for t in night.traces})
         if ids:
             selected = st.selectbox("Route", ids, format_func=lambda key: f"{trip_map[key].traveler} · {trip_map[key].origin} → {trip_map[key].dest}" if key in trip_map else key, key="route")
@@ -119,11 +131,11 @@ with overview:
                     market = curve or market
             if rows:
                 x = alt.X("tick:Q", title="15-minute tick · 22:00 to 05:45", scale=alt.Scale(domain=[0,31]), axis=alt.Axis(values=[0,4,8,12,16,20,24,28,31]))
-                line = alt.Chart(pd.DataFrame(market)).mark_line(color="#8CACE6",strokeWidth=2.5).encode(x=x,y=alt.Y("price:Q",title="Fare (USD)",scale=alt.Scale(zero=False)))
+                line = alt.Chart(pd.DataFrame(market)).mark_line(color="#6D7A94",strokeWidth=2).encode(x=x,y=alt.Y("price:Q",title="Fare (USD)",scale=alt.Scale(zero=False)))
                 marks = alt.Chart(pd.DataFrame(rows)).mark_point(filled=True,size=85).encode(x=x,y="price:Q",color=alt.Color("action:N",title="Decision",scale=alt.Scale(domain=list(COLORS),range=list(COLORS.values()))),shape=alt.Shape("action:N",scale=alt.Scale(domain=list(COLORS),range=["triangle-up","circle","diamond"]),legend=None),tooltip=["time:N","action:N",alt.Tooltip("price:Q",format="$,.2f"),"reason:N"])
                 chart = line + marks
                 if selected in trip_map:
-                    cap = alt.Chart(pd.DataFrame([{"cap":trip_map[selected].cap}])).mark_rule(color="#FFBE7A",strokeDash=[5,5]).encode(y="cap:Q",tooltip=[alt.Tooltip("cap:Q",title="Policy cap",format="$,.0f")])
+                    cap = alt.Chart(pd.DataFrame([{"cap":trip_map[selected].cap}])).mark_rule(color="#A65A24",strokeDash=[4,4],opacity=.65).encode(y="cap:Q",tooltip=[alt.Tooltip("cap:Q",title="Policy cap",format="$,.0f")])
                     chart += cap
                 st.altair_chart(chart.properties(height=310).configure_view(strokeWidth=0),width="stretch")
                 st.caption("Dashed line = policy cap. Hover over a marker for the reason. Market observations may continue after a purchase decision." if demo else "Dashed line = policy cap. Chart shows exported decisions; unobserved fares are not invented.")
@@ -134,7 +146,7 @@ with overview:
             else:
                 st.info("No fare decisions for this route at the selected tick.")
     with lesson_col:
-        st.subheader("What the night taught us")
+        st.subheader("Lessons & follow-up")
         with st.container(border=True):
             st.caption("ILLUSTRATIVE LESSONS" if demo else "EXPORTED COGNEE LESSONS")
             if tick < 31:
@@ -166,7 +178,7 @@ with overview:
         else:
             st.info("Both night_1.json and night_2.json are needed for a comparison.")
     with digest_col:
-        st.subheader("Your morning brief" if tick == 31 else "Replay brief so far")
+        st.subheader("Morning brief" if tick == 31 else "Replay brief")
         for key, t in latest.items():
             name = trip_map[key].traveler if key in trip_map else key
             st.markdown(f"**{name} · {t.decision.action} · ${t.price:,.0f}**")
@@ -176,7 +188,7 @@ with overview:
         st.download_button("Download morning brief",digest(night,tick),file_name=f"red-eye-night-{night_number}.txt",mime="text/plain")
 
 with decisions:
-    st.subheader("Every decision has a reason")
+    st.subheader("Decision records")
     actions = st.multiselect("Show decisions",list(COLORS),default=list(COLORS),key="actions")
     search = st.text_input("Find a traveler, rule, or reason",key="search")
     rows = [{"Time":clock_label(t.tick),"Tick":t.tick,"Trip":t.trip_id,"Fare":t.price,"Decision":t.decision.action,"Reason":t.decision.reason,"Rules":", ".join(t.decision.rules_used)} for t in visible if t.decision.action in actions]
@@ -189,7 +201,7 @@ with decisions:
         st.info("No decisions match these filters.")
 
 with workspace:
-    st.subheader("The details were already in the conversation")
+    st.subheader("Source workspace")
     st.caption("Synthetic source workspace for this project. In Runner output mode, extracted trip cards come from the runner export, not from this sample.")
     data = json.loads((ROOT / "data" / "workspace.json").read_text())
     messages_col, policy_col = st.columns([1, 1],gap="large")
