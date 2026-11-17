@@ -245,7 +245,7 @@ def team_budget_summary(night: Night, tick: int = 31) -> str | None:
 
 
 def digest(night: Night, tick: int = 31) -> str:
-    lines = [f"Red-Eye — Night {night.number}", "Demo fixtures; simulated purchases." if night.demo else "Runner output; BUY records are decisions, not booking confirmations.", ""]
+    lines = [f"Flighthawk AI — Night {night.number}", "Demo fixtures; simulated purchases." if night.demo else "Runner output; BUY records are decisions, not booking confirmations.", ""]
     if summary := team_budget_summary(night, tick):
         lines.extend([summary, ""])
     for trip_id, trace in statuses(night, tick).items():

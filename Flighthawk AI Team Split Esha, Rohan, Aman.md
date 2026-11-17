@@ -1,4 +1,4 @@
-# Red-Eye Team Split: Esha, Rohan, Aman
+# Flighthawk AI Team Split: Esha, Rohan, Aman
 
 > **Current update:** Cognee stays. Stripe Link Agent Wallet replaces Allowance. Rohan owns the revised request_payment/get_payment contract; approved test credentials are not completed purchases. Existing shared dataclasses stay unchanged until coordinated in [issue #1](https://github.com/eshajrv/TravelAgentDark/issues/1). See [README.md](README.md) for the current dashboard handoff.
 

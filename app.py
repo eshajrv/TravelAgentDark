@@ -1,4 +1,4 @@
-"""Aman's read-only Red-Eye dashboard: streamlit run app.py."""
+"""Aman's read-only Flighthawk AI dashboard: streamlit run app.py."""
 from __future__ import annotations
 
 import json
@@ -14,12 +14,12 @@ from ui_theme import COLORS, CSS, hero, ticket
 
 ROOT = Path(__file__).resolve().parent
 DEMO = ROOT / "demo" / "fixtures"
-OUTPUT = Path(os.environ.get("REDEYE_OUTPUT_DIR", str(ROOT / "output")))
-st.set_page_config(page_title="Red-Eye / Travel overview", page_icon="✈", layout="wide")
+OUTPUT = Path(os.environ.get("FLIGHTHAWK_OUTPUT_DIR", os.environ.get("REDEYE_OUTPUT_DIR", str(ROOT / "output"))))
+st.set_page_config(page_title="Flighthawk AI / Travel overview", page_icon="✈", layout="wide")
 st.markdown(CSS, unsafe_allow_html=True)
 
 with st.sidebar:
-    st.markdown('<div class="brand"><span class="brand-mark">✈</span> red–eye</div><div class="brand-sub">The overnight travel desk</div>', unsafe_allow_html=True)
+    st.markdown('<div class="brand"><span class="brand-mark">✈</span> Flighthawk AI</div><div class="brand-sub">The overnight travel desk</div>', unsafe_allow_html=True)
     st.divider()
     source = st.radio("Data source", ["Demo fixtures", "Runner output"], key="source")
     demo = source == "Demo fixtures"
@@ -166,7 +166,7 @@ with overview:
             st.caption(t.decision.reason)
         if not latest:
             st.info("No decisions yet.")
-        st.download_button("Download morning brief",digest(night,tick),file_name=f"red-eye-night-{night_number}.txt",mime="text/plain")
+        st.download_button("Download morning brief",digest(night,tick),file_name=f"flighthawk-ai-night-{night_number}.txt",mime="text/plain")
 
 with decisions:
     st.subheader("Decision records")

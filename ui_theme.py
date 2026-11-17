@@ -1,4 +1,4 @@
-"""Presentation helpers for the Red-Eye travel desk."""
+"""Presentation helpers for the Flighthawk AI travel desk."""
 from base64 import b64encode
 from html import escape
 from pathlib import Path
@@ -20,7 +20,7 @@ p,label {font-size:.89rem!important;line-height:1.55}
 [data-testid="stSidebar"] {background:#EAF1FB;border-right:1px solid #D6E3F2;min-width:230px;max-width:260px}
 [data-testid="stSidebar"] .block-container {padding-top:1.5rem}
 [data-testid="stSidebar"] hr {border-color:#CCDCEE}
-.brand {display:flex;align-items:center;gap:10px;font-size:1.45rem;font-weight:800;letter-spacing:-.06em;margin:8px 0 2px}
+.brand {display:flex;align-items:center;gap:10px;font-size:1.22rem;font-weight:800;letter-spacing:-.06em;margin:8px 0 2px}
 .brand-mark {display:grid;place-items:center;background:#1469DE;color:white;width:36px;height:36px;border-radius:11px;font-size:1.3rem;letter-spacing:0}
 .brand-sub {font-size:.7rem;color:#526984;margin-left:46px;letter-spacing:.07em;text-transform:uppercase}
 .desk-header {display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;gap:12px}
@@ -75,8 +75,8 @@ button[kind="secondary"]:hover {background:#E6F0FF;border-color:#1269DE;color:#1
 
 def hero() -> str:
     artwork = b64encode((Path(__file__).parent / "assets" / "flight-hero.svg").read_bytes()).decode()
-    return f'''<div class="desk-header"><span class="desk-label">NORTHSTAR LABS / TRAVEL DESK</span><span class="desk-badge">Overnight decisions. Morning clarity.</span></div>
-<section class="flight-hero"><div class="hero-copy"><span class="hero-kicker">RED–EYE / OVERNIGHT TRAVEL</span><h1>Good nights.<br>Better flights.</h1><p>Your team's next journey, with every fare, decision, and detail in view.</p></div><img class="hero-art" src="data:image/svg+xml;base64,{artwork}" alt="An airplane following a dotted route through a blue sky, beside a colorful travel ticket"></section>'''
+    return f'''<div class="desk-header"><span class="desk-label">FLIGHTHAWK AI / TRAVEL DESK</span><span class="desk-badge">Overnight decisions. Morning clarity.</span></div>
+<section class="flight-hero"><div class="hero-copy"><span class="hero-kicker">FLIGHTHAWK AI / OVERNIGHT TRAVEL</span><h1>Good nights.<br>Better flights.</h1><p>Your team's next journey, with every fare, decision, and detail in view.</p></div><img class="hero-art" src="data:image/svg+xml;base64,{artwork}" alt="An airplane following a dotted route through a blue sky, beside a colorful travel ticket"></section>'''
 
 
 def ticket(trip, status, index: int) -> str:

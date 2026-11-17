@@ -11,7 +11,7 @@
     {"channel": "#random", "user": "Priya", "ts": "2026-11-14T09:05:00", "text": "Ok I'm going, flying SFO to LHR on Dec 9 or 10."}
   ],
   "email": [
-    {"from": "program-chairs@neurips.cc", "to": "esha@redeye.dev", "date": "2026-11-11", "subject": "Your paper has been accepted", "body": "Congratulations, your paper has been accepted for an oral presentation on December 8 in New York."},
-    {"from": "ops@acme.com", "to": "rohan@redeye.dev", "date": "2026-11-13", "subject": "Onsite in Chicago", "body": "We'd love to host you at our Chicago office the week of Dec 1. Let us know which day works."}
+    {"from": "program-chairs@neurips.cc", "to": "esha@flighthawk.example", "date": "2026-11-11", "subject": "Your paper has been accepted", "body": "Congratulations, your paper has been accepted for an oral presentation on December 8 in New York."},
+    {"from": "ops@acme.com", "to": "rohan@flighthawk.example", "date": "2026-11-13", "subject": "Onsite in Chicago", "body": "We'd love to host you at our Chicago office the week of Dec 1. Let us know which day works."}
   ]
 }

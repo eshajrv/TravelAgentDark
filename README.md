@@ -1,4 +1,4 @@
-# TravelAgentDark (Red-Eye)
+# Flighthawk AI
 
 An overnight travel desk for small teams. It finds trips in Slack and email, follows company policy, watches fares, and learns from each night through **Cognee**. Payments use **Stripe Link Agent Wallet**. A purchase decision, a spend request, a payment credential, and a confirmed flight booking are separate states.
 
@@ -16,7 +16,7 @@ If this checkout already has a virtual environment managed by uv, use `uv pip in
 
 The app starts in **Demo fixtures** mode. These are handwritten extracted trips, scripted decisions, and illustrative lessons, not an actual Cognee run. The workspace contains 20 Slack messages and five emails. The policy has ten named rules. Esha owns actual extraction and Cognee learning; Rohan owns the runner and Stripe integration.
 
-Switch to **Runner output** and refresh to read `output/night_N.json`. The app never invokes the runner, memory, or payments. It never substitutes fixture trips or lessons when runner data is missing. `REDEYE_OUTPUT_DIR` can point to another results directory.
+Switch to **Runner output** and refresh to read `output/night_N.json`. The app never invokes the runner, memory, or payments. It never substitutes fixture trips or lessons when runner data is missing. `FLIGHTHAWK_OUTPUT_DIR` can point to another results directory (`REDEYE_OUTPUT_DIR` remains supported for existing setups).
 
 ## Data handoff
 
@@ -43,4 +43,4 @@ Esha’s memory layer is included on main. The runner calls `setup()` once befor
 
 The second command regenerates `demo/fixtures/` only. It never writes runner output. Do not run the legacy `test_cognee.py` as part of UI validation: it calls the live memory service and clears its dataset.
 
-Coordination and milestone commits are posted in [GitHub issue #1](https://github.com/eshajrv/TravelAgentDark/issues/1). The original [build plan](BUILD_PLAN.md) and [team split](Red-Eye%20Team%20Split%20Esha,%20Rohan,%20Aman.md) provide project context; this README and the latest issue decisions govern the current payment scope.
+Coordination and milestone commits are posted in [GitHub issue #1](https://github.com/eshajrv/TravelAgentDark/issues/1). The original [build plan](BUILD_PLAN.md) and [team split](Flighthawk%20AI%20Team%20Split%20Esha,%20Rohan,%20Aman.md) provide project context; this README and the latest issue decisions govern the current payment scope.
