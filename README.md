@@ -29,6 +29,10 @@ Switch to **Runner output** and refresh to read `output/night_N.json`. The app n
 - The Payments & bookings tab shows exported execution states and simulated replacement savings. Link approval is a credential state, not a completed purchase. Offline memory is labeled explicitly.
 - Comparisons match trips with BUY decisions in both nights and count the first BUY once per trip. They are labeled selected-fare differences, not realized savings. Payment/booking outcomes must be confirmed independently by the runner.
 
+## Memory integration
+
+Esha’s memory layer is included on main. The runner calls `setup()` once before Night 1, `log_trace()` on every tick, and `end_night(n)` after each night. `recall_context(trip_id)` supplies policy, the $500 Link request limit, and learned lessons. Run only one Cognee script at a time. Install memory dependencies from `requirements.txt` separately from the UI dependencies; on macOS, an OpenSSL load error may require `brew install openssl@3`.
+
 ## Validation
 
 ```bash

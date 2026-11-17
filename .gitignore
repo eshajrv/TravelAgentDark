@@ -3,3 +3,7 @@
 __pycache__/
 output/
 .cognee*
+# Stripe Link card files (--output-file): never commit
+tmp/
+*.card.json
+.DS_Store

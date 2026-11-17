@@ -1,0 +1,4 @@
+cognee
+streamlit
+openai
+python-dotenv

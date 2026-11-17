@@ -5,11 +5,31 @@ Prize targets: **Best Use of Cognee** (primary), **Best Overall**.
 
 > Red-Eye is an overnight travel agent for teams too small to have a travel person.
 > It reads the team's Slack and email for upcoming work trips, watches fares all night,
-> checks every fare against company policy stored in **Cognee**, and books with a
-> one-time virtual card from **Allowance**. Every decision is logged, and
-> `cognee.improve()` turns those logs into lessons so the next night's agent is smarter.
+> checks every fare against company policy stored in **Cognee**, and pays with a
+> single-use card through **Stripe Link** after a human approves on their phone. Every
+> decision is logged, and `cognee.improve()` turns those logs into lessons so the next
+> night's agent is smarter.
 
 "Red-Eye" is a placeholder name.
+
+---
+
+## 0. Final stack and priority order
+
+| Layer | Choice | Notes |
+|---|---|---|
+| **Memory** | **Cognee** | Rules, workspace facts and the learning loop. Our main prize target. |
+| **Payments** | **Stripe Link CLI** (`@stripe/link-cli`) | Replaces Allowance (the Allowance founder recommended it). No Allowance code. `MockPayments` is the default. |
+| **Overnight fares** | Seeded simulator (`sim/fares.py`) | The source for the Night 1 / Night 2 demo. |
+| **Real prices** | Jinko travel API (MCP at `https://mcp.gojinko.com`) | **Optional.** One real search per trip to set the simulator's base price. Add only after everything else works. |
+| **AI model** | One OpenAI key | `LLM_API_KEY` in `.env`, shared by Cognee and the agent. |
+| **UI** | Streamlit | `app.py` |
+
+**Priority order:**
+
+1. **Must work:** the Cognee loop (`remember` → `improve` → `recall`) + simulator + agent + **fake payment**. This alone is a complete demo.
+2. **Then:** swap the fake payment for **Stripe Link**, so approval happens live on stage.
+3. **If there's time:** **Jinko** for real starting prices.
 
 ---
 
@@ -57,21 +77,39 @@ Cognee 1.0 API: `remember`, `recall`, `forget`, `improve`. `improve(dataset, ses
 
 **Example lesson after `improve()`:** "SFO→JFK dropped 25%+ after midnight on 3 of 4 nights; wait if more than 10 days out."
 
-### Allowance: how the agent pays
+### Stripe Link: how the agent pays
 
-When the agent decides **BUY**, and only after the policy check passes, it asks for a **one-time virtual card**:
+We took Allowance's advice: its founder has paused his one-time-card product and recommended **Stripe Link** for agent payments.
 
-- Limit = fare + $5, single merchant, expires in 1 hour.
-- The agent never sees a real card.
-- Anything over the policy cap is **ESCALATE**: a human approves it in the morning digest instead.
+**How it works:**
 
-**Caveat from the conversation:** Allowance's founder said he has paused the one-time-card product and recommended **Stripe Link** (approve on your phone, the agent gets a one-time card). So payments go through one adapter, and we try backends in this order, stopping at the first that works within 20 minutes:
+1. When the agent decides **BUY**, and only after the policy check passes, it creates a **spend request**: merchant, amount and a plain-English reason ("SFO→JFK for NeurIPS, $291, under the $600 Tier A cap").
+2. The approver gets a **push notification in the Link app** and approves or denies.
+3. On approval, the agent gets a **single-use card capped at that amount**.
 
-1. Allowance sandbox (ask the founder for keys tonight)
-2. Stripe test mode (Link or test cards)
-3. Mock adapter, labeled in the demo as "this is where Allowance plugs in"
+**Setup:**
 
-**No real bookings tonight.**
+- A Link account with a saved payment method, and the Link app on the approver's phone.
+- Install: `npm i -g @stripe/link-cli`. Call it from Python with `subprocess`.
+
+**Limits:**
+
+- Requests must be approved within **10 minutes**, or they expire.
+- **$500 per request** cap. A fare over $500 is **ESCALATE**, even if it's under the policy cap (Tier A's cap is $600).
+- **US/Canada only.**
+
+**Rules:**
+
+- Always use `--output-file`, so card numbers never enter the agent's prompt or logs.
+- **Demo rule:** issue the card live on stage, but **do not check out with it. No real purchases.**
+
+**Overnight framing:** the agent watches all night and only pings a human when it finds a deal worth taking. Requests that aren't approved, or expire, become **ESCALATE** items in the morning digest.
+
+**Backends:** `payments.py` has `MockPayments` (the default) and `LinkPayments`, chosen by `PAYMENTS_BACKEND=mock|link` in `.env`. Both expose `request_payment()` and `get_payment()`.
+
+### Jinko: real starting prices (optional)
+
+Only after priorities 1 and 2 work. `sim/jinko.py` makes **one real search per trip** through Jinko's MCP server (`https://mcp.gojinko.com`) and uses the lowest fare as the simulator's base price. The overnight movement still comes from the seeded simulator, so the demo stays repeatable. If Jinko access is unclear, skip it.
 
 ---
 
@@ -81,7 +119,7 @@ When the agent decides **BUY**, and only after the policy check passes, it asks 
 2. **Extract trips:** traveler, origin, destination, date window, hard constraints, preferences.
 3. **Set policy once,** in plain English → Cognee graph.
 4. **Watch overnight:** every 15 simulated minutes: fetch fare → recall rules + lessons → decide BUY / WAIT / ESCALATE, with a reason.
-5. **Book** with a one-time card.
+5. **Pay:** a Stripe Link spend request; the approver approves on their phone; the agent gets a single-use card.
 6. **Learn:** grade the night in hindsight → `improve()`.
 7. **Morning digest:** what was booked, money saved, what needs a human.
 
@@ -100,7 +138,7 @@ workspace.json + policy.md
         ▲                          │ BUY
         │ improve()                ▼
    ┌─────────┐  remember()  ┌──────────────┐
-   │ Session │◄─────────────│ Payments     │  Allowance / Stripe / mock
+   │ Session │◄─────────────│ Payments     │  Stripe Link / mock
    │ traces  │   (trace)    │ adapter      │
    └─────────┘              └──────────────┘
 ```
@@ -110,13 +148,13 @@ workspace.json + policy.md
 | Workspace ingest | Python + mock JSON | Load messages into Cognee |
 | Trip extractor | LLM + `cognee.recall` | Messages → `TripRequest` objects |
 | Policy graph | Cognee | Caps, tiers, approval rules |
-| Fare feed | Seeded simulator | Fare per route per tick; swap in a real API later |
+| Fare feed | Seeded simulator (+ optional Jinko base price) | Fare per route per tick |
 | Decision agent | LLM with tool calls | BUY / WAIT / ESCALATE + reason + rules cited |
-| Payments | Allowance → Stripe test → mock | One single-use card per booking |
+| Payments | Stripe Link CLI, or mock | Spend request → phone approval → single-use card |
 | Memory loop | `remember` (session) + `improve` | Traces → lessons |
 | UI | Streamlit | Fare timeline, decision log, lessons, digest |
 
-**Stack:** Python 3.10+, `cognee`, an LLM API key (`LLM_API_KEY`; OpenAI by default), `streamlit`.
+**Stack:** Python 3.10+, `cognee`, one OpenAI key (`LLM_API_KEY`, shared by Cognee and the agent), `streamlit`, `@stripe/link-cli` (Node), optional Jinko MCP.
 
 ---
 
@@ -126,16 +164,17 @@ workspace.json + policy.md
 TravelAgentDark/
 ├── BUILD_PLAN.md
 ├── README.md
-├── requirements.txt          # cognee, streamlit, openai/anthropic, python-dotenv
-├── .env.example              # LLM_API_KEY=, ALLOWANCE_API_KEY=, STRIPE_SECRET_KEY=
+├── requirements.txt          # cognee, streamlit, openai, python-dotenv
+├── .env.example              # LLM_API_KEY=, PAYMENTS_BACKEND=mock, JINKO_API_KEY=
 ├── data/
 │   ├── workspace.json        # ~20 Slack msgs + 5 emails
 │   └── policy.md             # ~10 travel rules
 ├── sim/
-│   └── fares.py              # seeded fare generator + hindsight_min()
+│   ├── fares.py              # seeded fare generator + hindsight_min()
+│   └── jinko.py              # optional: one real Jinko search per trip (base price)
 ├── memory.py                 # Cognee wrapper: ingest, recall, log_trace, improve
 ├── agent.py                  # decide(trip, price, context) -> (decision, reason)
-├── payments.py               # PaymentAdapter: Allowance / Stripe / Mock
+├── payments.py               # MockPayments (default) + LinkPayments (Stripe Link CLI)
 ├── run_night.py              # the overnight loop (CLI)
 └── app.py                    # Streamlit demo UI
 ```
@@ -151,8 +190,9 @@ for tick in range(32):                          # 8 hrs × every 15 min
         context = await memory.recall(f"Rules and lessons for {trip.id}")
         decision, reason = agent.decide(trip, price, context)
         if decision == "BUY":
-            card = payments.issue_card(price + 5, merchant=trip.airline, trip_id=trip.id)
-            book(trip, card)
+            req = payments.request_payment(price, merchant="airline", reason=decision.reason)
+            # approver approves on their phone; poll get_payment(req["id"])
+            # "approved" -> card_file (never printed or logged); "denied"/"expired" -> ESCALATE
         await memory.log_trace(trace, session=f"night_{night}")
 
 memory.add_hindsight(night)                     # reveal lowest fare, compute regret
@@ -176,11 +216,14 @@ await cognee.improve(dataset=DATASET, session_ids=[f"night_{n}"])
 ctx = await cognee.recall("Rules and lessons for esha_sfo_jfk", datasets=[DATASET])
 ```
 
-**Payments interface:**
+**Payments interface** (same two functions in `MockPayments` and `LinkPayments`):
 
 ```python
-class PaymentAdapter:
-    def issue_card(self, amount_usd: float, merchant: str, trip_id: str) -> "Card": ...
+def request_payment(amount: float, merchant: str, reason: str) -> dict:
+    # {"id": "lsrq_...", "approval_url": str, "status": "pending"}
+
+def get_payment(request_id: str) -> dict:
+    # {"id", "status": "pending" | "approved" | "denied" | "expired", "card_file": str | None}
 ```
 
 ---
@@ -239,15 +282,22 @@ Before anyone codes, agree on the data shapes and function names so the three pi
 
 | Time | Memory | Agent | UI & pitch |
 |---|---|---|---|
-| 4:00–4:30 | Install Cognee, LLM key, hello-world `remember`/`recall` | Repo, `PaymentAdapter` stub, ask Allowance for keys | Write `workspace.json` + `policy.md` |
+| 4:00–4:30 | Install Cognee, LLM key, hello-world `remember`/`recall` | Repo, `MockPayments`, install `@stripe/link-cli` | Write `workspace.json` + `policy.md` |
 | 4:30–5:30 | Ingest policy + workspace; extraction returns 3 trips | Fare simulator + seeds; tick loop prints prices | Streamlit skeleton |
-| 5:30–6:45 | `recall` rules + lessons per trip; traces to session | Decision agent; payments wired | Fare timeline with decision markers |
+| 5:30–6:45 | `recall` rules + lessons per trip; traces to session | Decision agent; mock payments wired | Fare timeline with decision markers |
 | 6:45–7:30 | Hindsight grading + `improve()`; before/after `recall` | Night 2 uses lessons; B refuses Dec 3, C escalates | Lessons panel + morning digest |
-| 7:30–8:15 | Improve lesson quality; pre-ingest for demo | Bug bash, freeze seeds | 3–4 pitch slides |
+| 7:30–8:15 | Improve lesson quality; pre-ingest for demo | `LinkPayments` live; optional Jinko; freeze seeds | 3–4 pitch slides; approval states in the app |
 | 8:15–8:45 | Rehearse 2× | Record backup demo video | Rehearse 2× |
 | 8:45 | Submit | Submit | Submit |
 
 **Hard checkpoint at 6:45:** if `improve()` isn't working yet, everyone helps Memory.
+
+### Team roles
+
+- **Esha (memory, Cognee):** unchanged. `memory.py`: `get_trips`, `recall_context`, `log_trace`, `end_night`, and the before/after proof.
+- **Rohan (agent + payments):** `sim/fares.py`, `agent.py`, `run_night.py`, and `payments.py`, with **`MockPayments` first, then `LinkPayments`** via `link-cli`. Optional `sim/jinko.py`.
+  **Done when:** Night 2 buys cheaper, refuses Rohan's Dec 3 fare, escalates Priya, and **on stage a real Link approval appears on the phone.**
+- **Aman (data, UI, pitch):** `data/workspace.json`, `data/policy.md`, `app.py`, slides and demo. Add to the Streamlit app a **"Pending approval" state with the approval link**, and an **"Approved, card issued" state**. Add the Link approval moment to the demo script.
 
 ---
 
@@ -261,7 +311,8 @@ Before anyone codes, agree on the data shapes and function names so the three pi
 | 1:00 | Night 1 fare timeline | "It bought at $412. The night's low was $287: $125 of regret." |
 | 1:30 | `improve()` + before/after `recall` | "Cognee turns the night's traces into a lesson." |
 | 1:55 | Night 2 | "Buys at about $291, refuses Rohan's Dec 3 fare, escalates Priya." |
-| 2:30 | Morning digest | "Booked, saved, needs approval." |
+| 2:15 | Phone: Link approval → app shows "Approved, card issued" | "It only wakes a human for a deal worth taking. We took Allowance's advice and used Stripe Link for agent payments: I approve on my phone, and the agent gets a single-use card capped at the fare." (Don't check out with it.) |
+| 2:35 | Morning digest | "Booked, saved, needs approval." |
 | 2:50 | Close | "An overnight travel desk for teams that can't afford one." |
 
 ---
@@ -273,7 +324,7 @@ Before anyone codes, agree on the data shapes and function names so the three pi
 | Why memory? Isn't this a price alert? | A price alert can't pull constraints out of Slack, enforce a tiered policy, or learn that a route drops after midnight. |
 | Is 2–4 AM really cheapest? | We don't assume so. The agent learns per route from hindsight-graded traces. |
 | Real bookings? | Fares and booking sit behind one interface; swap the simulator for a flight API's test mode. |
-| Isn't it risky to let an agent spend money? | Single-use card capped at the fare, issued only after the policy check; over the cap needs a human. |
+| Isn't it risky to let an agent spend money? | It never holds a real card. Every buy is a Stripe Link spend request a human approves on their phone; the card is single-use, capped at the fare, and written to a file the agent never reads into its prompt. Over the cap is ESCALATE. |
 | Privacy? | Opt-in channels only; we store trip facts, not whole conversations. |
 | Business model? | Per-booking fee, or a share of savings vs. the first price seen. |
 
@@ -283,7 +334,8 @@ Before anyone codes, agree on the data shapes and function names so the three pi
 
 | Risk | Fallback |
 |---|---|
-| Allowance API not live | Stripe test mode, else a mock labeled "Allowance plugs in here" |
+| Link setup fails or Wi-Fi drops | Fall back to the mock backend (`PAYMENTS_BACKEND=mock`) |
+| Jinko access unclear | Skip it; simulator only |
 | Cognee or LLM calls slow | Pre-ingest; small dataset; cache `recall` |
 | Vague lessons from `improve()` | Explicit numbers (`regret`, `hindsight_min`) in traces; ask how to customize `improve` |
 | `remember` arguments differ | Check the docs quickstart first; ask the mentor |
@@ -294,10 +346,8 @@ Before anyone codes, agree on the data shapes and function names so the three pi
 
 ## 12. Ask sponsors tonight
 
-**Allowance**
-- [ ] Is the one-time card API live, with sandbox keys?
-- [ ] Is there an approval hook (human approves, agent gets the card)?
-- [ ] Which booking API did you recommend? (Our notes say "Jinko"; probably mis-heard.)
+**Jinko / organizers**
+- [ ] How do we get Jinko API or MCP access tonight?
 
 **Cognee**
 - [ ] Exact `remember()` arguments for session vs. permanent memory.
@@ -313,4 +363,6 @@ Before anyone codes, agree on the data shapes and function names so the three pi
 - [Cognee: improve operation](https://docs.cognee.ai/core-concepts/main-operations/improve)
 - [Cognee: self-improvement quickstart](https://docs.cognee.ai/guides/self-improvement-quickstart)
 - [Cognee on PyPI](https://pypi.org/project/cognee/)
+- Stripe Link CLI: `npm i -g @stripe/link-cli`
+- Jinko MCP server: `https://mcp.gojinko.com`
 - Our conversations with the Allowance and Cognee teams at the event
