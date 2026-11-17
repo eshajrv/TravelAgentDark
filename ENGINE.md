@@ -68,3 +68,9 @@ Versioned exports retain nested decisions and trips/traces/lessons, plus observa
 Night 2 retains Night 1's booking and uses different fares. Mock replacement checks free cancellation and a cheaper total before issuing payment, then atomically records full refund and replacement in SQLite. Failed replacement preserves the original. Link mode has no remote booking/refund orchestration.
 
 One runner holds the state-file lock. Durable decision intents preserve the original decision across a crash after booking; per-trip checkpoints and the trace outbox prevent duplicate trip/tick rows and repeated purchases on resume. Exports are written atomically. Jinko remains deferred.
+
+## Verified phone approval integration
+
+A real user-approved $1 Link test request completed authentication, approval and test credential retrieval. The runner reconciled it to `approved`, cleared the pending escalation, and Aman's parser displayed `approved` without warnings. Booking count stayed zero as intended. The test used an isolated synthetic-offer harness; the main dashboard's existing mock-night results remain mock results.
+
+For your own installation, ensure `link-cli` is on PATH and use the same `LINK_AUTH_FILE` for login, the runner and reconciliation. Set LINK_MERCHANT_URL before creating requests. Approve the returned spend-request URL after wallet login, then run `--payment-mode link --reconcile` with the original run ID/output directory. Connection approval and spend approval are two separate steps. Never commit the wallet auth file or card files.
