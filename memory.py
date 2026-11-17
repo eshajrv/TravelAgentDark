@@ -35,6 +35,11 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# Keep Cognee's databases in this project (gitignored as .cognee*), not inside .venv
+_HERE = Path(__file__).parent
+os.environ.setdefault("SYSTEM_ROOT_DIRECTORY", str(_HERE / ".cognee_system"))
+os.environ.setdefault("DATA_ROOT_DIRECTORY", str(_HERE / ".cognee_data"))
+
 import cognee  # noqa: E402  (needs the env loaded first)
 
 from models import Decision, Trace, Trip  # noqa: E402
