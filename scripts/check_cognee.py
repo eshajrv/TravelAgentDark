@@ -11,7 +11,7 @@ sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 from run_night import load_configuration
 
 async def smoke(cognee):
-    dataset='redeye_smoke_'+uuid.uuid4().hex
+    dataset='flighthawk_smoke_'+uuid.uuid4().hex
     session='night_1'
     print('Isolated dataset:',dataset)
     await cognee.remember('Tier A conference economy fare cap is $600.',dataset_name=dataset,self_improvement=False)

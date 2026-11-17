@@ -1,4 +1,4 @@
-"""Shared data shapes and function contracts for Red-Eye.
+"""Shared data shapes and function contracts for Flighthawk AI.
 
 Agreed by Esha, Rohan and Aman before coding. If you need to change a field
 or a function name, tell the other two first.

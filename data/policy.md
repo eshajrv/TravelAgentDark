@@ -1,6 +1,6 @@
-# Northstar Labs travel policy
+# Flighthawk AI travel policy
 
-Synthetic policy for the Red-Eye demo. Effective November 16, 2026. All amounts are US dollars for one outbound fare including taxes and mandatory fees.
+Synthetic policy for the Flighthawk AI demo. Effective November 16, 2026. All amounts are US dollars for one outbound fare including taxes and mandatory fees.
 
 1. **tier_a_cap**: Approved Tier A conferences have a $600 economy fare cap. The Tier A list is Applied AI Summit, NeurIPS, and ICML. Only an explicitly confirmed work trip to a listed event qualifies.
 2. **tier_b_cap**: Approved Tier B conferences have a $350 economy fare cap. The Tier B list is Regional ML Practitioners Day and Data Engineering Exchange. An unlisted conference uses the ordinary $300 cap pending review.
