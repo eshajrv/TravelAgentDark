@@ -24,3 +24,11 @@ Failure tests cover crash recovery immediately after booking, trace-write retry 
 This checkout currently has no configured `LLM_API_KEY`/`OPENAI_API_KEY`, `LLM_MODEL`, or `LINK_MERCHANT_URL`, and `link-cli` is not installed. Therefore live trip extraction, Cognee learning/recall, LLM timing, and Link login/approval/credential retrieval were not run. No real flight purchase or refund was attempted.
 
 Follow ENGINE.md after configuring local services. Use `--llm` with Esha's prose lessons; the offline deterministic baseline does not interpret prose. Only one Cognee script may run at a time. The runner handles setup and must not be launched alongside the standalone memory or live smoke scripts.
+
+## Combined team integration and phone setup — November 16
+
+Tested the engine with Esha's memory wrapper and Aman's dashboard in an isolated integration checkout. The initial combined suite passed 33 tests; actual two-night exports loaded in Streamlit AppTest with no exceptions at replay ticks 0, 12, 24 and 31. Selected totals were $677 and $553; simulated replacement savings were $124. The latest main/dashboard/branding changes were subsequently incorporated for a fresh test pass.
+
+Link CLI 1.5.1 was installed locally. The user completed phone authorization: authenticated with userinfo:read and payment_methods.agentic scopes. The real Link adapter successfully created a $1 USD test-mode request and returned pending_approval plus its approval URL. This establishes successful authentication and request creation; final phone spend approval is tracked separately. No real purchase or charge was performed. Auth files and request records remain outside tracked source.
+
+`scripts/check_link.py REQUEST_ID` checks an existing request through the adapter without expanding card data. Set LINK_AUTH_FILE and, if needed, --executable for your local installation. Wallet connection alone does not switch the dashboard from mock data to Link output.
