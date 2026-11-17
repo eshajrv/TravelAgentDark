@@ -52,6 +52,7 @@ TRIPS_FILE = OUTPUT / "trips.json"      # cache, so extraction runs once
 LESSONS_FILE = OUTPUT / "lessons.json"  # every lesson learned, by night
 TICKS_START_HOUR = 22                   # tick 0 = 10:00 PM, 4 ticks per hour
 LINK_MAX = 500.0                        # Stripe Link's per-request cap (see BUILD_PLAN.md)
+HOME_AIRPORT = os.getenv("HOME_AIRPORT", "SFO")  # used when a message doesn't say where they fly from
 
 OUTPUT.mkdir(exist_ok=True)
 
@@ -173,11 +174,15 @@ def _parse_trips(text: str) -> list[Trip]:
         return []
     trips = []
     for t in json.loads(match.group(0)):
+        if not t.get("traveler") or not t.get("dest"):
+            continue  # not a usable trip
+        origin = (t.get("origin") or HOME_AIRPORT).upper()
+        dest = t["dest"].upper()
         trip = Trip(
-            id=f"{t['traveler'].lower()}_{t['origin'].lower()}_{t['dest'].lower()}",
+            id=f"{t['traveler'].lower()}_{origin.lower()}_{dest.lower()}",
             traveler=t["traveler"],
-            origin=t["origin"].upper(),
-            dest=t["dest"].upper(),
+            origin=origin,
+            dest=dest,
             dates=list(t.get("dates") or []),
             banned_dates=list(t.get("banned_dates") or []),
             cap=float(t.get("cap") or 0),

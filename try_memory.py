@@ -30,7 +30,7 @@ def fake_decide(trip, price, already_bought):  # stand-in for Rohan's decide
 
 if __name__ == "__main__":
     print("1) Loading policy + workspace into Cognee...")
-    setup(reset=True)
+    setup(reset=True)  # rebuilds the graph from scratch
 
     print("\n2) Trips Cognee found in the messages:")
     trips = get_trips(refresh=True)
