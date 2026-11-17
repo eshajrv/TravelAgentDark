@@ -53,9 +53,15 @@ class LinkPayments:
         rid=data.get('id','')
         if not re.fullmatch(r'lsrq_[A-Za-z0-9_]+',rid): raise PaymentError('Invalid spend request ID')
         raw=data.get('status')
-        statuses={'created':'pending','pending_approval':'pending','approved':'approved','denied':'denied','expired':'expired','canceled':'denied','requires_action':'pending','failed':'denied','submitted':'pending','succeeded':'approved'}
+        statuses={'created':'pending','pending_approval':'pending','approved':'approved','denied':'denied',
+                  'expired':'expired','canceled':'canceled','requires_action':'requires_action',
+                  'failed':'failed','submitted':'submitted','succeeded':'succeeded'}
         if raw not in statuses: raise PaymentError('Unknown Link request state')
-        return {'id':rid,'approval_url':data.get('approval_url'),'status':statuses[raw], 'raw_status':raw,'card_file':None,'test_mode':True}
+        action = ((data.get('status_details') or {}).get('requires_action') or {}).get('next_action')
+        safe_action = {k: action[k] for k in ('type','resolution','display_message','action_url','expires_at')
+                       if k in action} if isinstance(action,dict) else None
+        return {'id':rid,'approval_url':data.get('approval_url'),'status':statuses[raw], 'raw_status':raw,
+                'required_action':safe_action,'card_file':None,'test_mode':True}
     def request_payment(self,amount,merchant,reason,*,operation_id=None):
         value=cents(amount)
         if value>50000: raise PaymentError('Link project limit is $500')
@@ -77,10 +83,12 @@ class LinkPayments:
         return result
     def create_checkout(self,offer,operation_id):
         r=self.request_payment(offer.price,offer.merchant,f'{offer.origin} to {offer.dest}, {offer.travel_date}, fare ${offer.price:.2f}',operation_id=operation_id)
-        return Checkout(r['id'],r['approval_url'],r['status'],cents(offer.price),'usd',self.backend,operation_id)
+        return Checkout(r['id'],r['approval_url'],r['status'],cents(offer.price),'usd',self.backend,operation_id,
+                        r['raw_status'],r['required_action'])
     def retrieve_checkout(self,request_id,operation_id,amount):
         r=self.get_payment(request_id)
-        return Checkout(r['id'],r['approval_url'],r['status'],amount,'usd',self.backend,operation_id)
+        return Checkout(r['id'],r['approval_url'],r['status'],amount,'usd',self.backend,operation_id,
+                        r['raw_status'],r['required_action'])
 
 def get_backend():
     name=os.getenv('PAYMENTS_BACKEND','mock')

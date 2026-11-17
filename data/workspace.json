@@ -1,0 +1,35 @@
+{
+  "workspace": "Northstar Labs",
+  "synthetic": true,
+  "timezone": "America/Los_Angeles",
+  "as_of": "2026-11-16",
+  "slack_messages": [
+    {"id":"s01","channel":"general","sender":"Aman","timestamp":"2026-11-12T09:00:00-08:00","text":"December planning thread! Please drop travel bits here before we disappear into launch week."},
+    {"id":"s02","channel":"research","sender":"Esha","timestamp":"2026-11-12T09:12:00-08:00","text":"My Applied AI Summit talk got accepted 🎉 Forwarded the organizer email. Finally a reason to get the retrieval demo into shape."},
+    {"id":"s03","channel":"research","sender":"Aman","timestamp":"2026-11-12T09:18:00-08:00","text":"Nice! That summit is on our Tier A list. Use the company travel policy, not the random limit in last year's spreadsheet."},
+    {"id":"s04","channel":"travel","sender":"Esha","timestamp":"2026-11-12T10:05:00-08:00","text":"For the NYC summit I can fly out of SFO on Dec 6 or Dec 7. JFK please, the organizers are arranging pickup there."},
+    {"id":"s05","channel":"travel","sender":"Esha","timestamp":"2026-11-12T10:08:00-08:00","text":"Economy is fine. I care more about getting there with enough time to rehearse than which airline it is."},
+    {"id":"s06","channel":"customer-atlas","sender":"Rohan","timestamp":"2026-11-12T11:20:00-08:00","text":"Atlas wants us in Chicago for the rollout. Waiting on Maya's email with their slot options."},
+    {"id":"s07","channel":"customer-atlas","sender":"Aman","timestamp":"2026-11-12T11:25:00-08:00","text":"Great, keep this a customer visit in the expense tracker. The research conference budget doesn't apply."},
+    {"id":"s08","channel":"travel","sender":"Rohan","timestamp":"2026-11-12T12:03:00-08:00","text":"Chicago travel window is Dec 2 through Dec 4. I'll leave from SFO and land at ORD."},
+    {"id":"s09","channel":"travel","sender":"Rohan","timestamp":"2026-11-12T12:17:00-08:00","text":"Oh wait, not the 3rd. That's my sister's graduation and I promised I'd be there. Even if that flight is way cheaper, skip it.","reply_to":"s08"},
+    {"id":"s10","channel":"travel","sender":"Aman","timestamp":"2026-11-12T12:21:00-08:00","text":"Got it Rohan, either the 2nd or 4th works. No need to choose yet.","reply_to":"s08"},
+    {"id":"s11","channel":"general","sender":"Priya","timestamp":"2026-11-13T08:40:00-08:00","text":"I'm joining the December team offsite in SF! Still in Boston until then. Forwarding the venue email."},
+    {"id":"s12","channel":"travel","sender":"Priya","timestamp":"2026-11-13T08:45:00-08:00","text":"BOS to SFO for me. Dec 9 or 10 both work, and I don't have any blocked dates in that window."},
+    {"id":"s13","channel":"travel","sender":"Priya","timestamp":"2026-11-13T08:47:00-08:00","text":"The fares I glanced at looked painful. If it won't fit policy, leave it for a person to approve instead of putting it on my card."},
+    {"id":"s14","channel":"ops","sender":"Aman","timestamp":"2026-11-13T09:15:00-08:00","text":"Quick reminder: offsites use the ordinary travel cap. Being an internal event doesn't make something a Tier A conference."},
+    {"id":"s15","channel":"general","sender":"Rohan","timestamp":"2026-11-13T10:02:00-08:00","text":"Anyone know who borrowed the HDMI adapter? The demo monitor is very committed to showing a black screen."},
+    {"id":"s16","channel":"research","sender":"Esha","timestamp":"2026-11-13T11:30:00-08:00","text":"The Tokyo robotics conference looks fun next spring, but I'm not going. Please don't turn that bookmark into a trip."},
+    {"id":"s17","channel":"ops","sender":"Aman","timestamp":"2026-11-14T14:00:00-08:00","text":"We are comparing outbound economy fares for this demo. Hotels and return legs are a separate task."},
+    {"id":"s18","channel":"customer-atlas","sender":"Rohan","timestamp":"2026-11-14T14:24:00-08:00","text":"Maya confirmed they're flexible on arrival. The graduation constraint still stands, no changes there."},
+    {"id":"s19","channel":"general","sender":"Priya","timestamp":"2026-11-15T16:12:00-08:00","text":"I uploaded the offsite agenda. Don't book anything for the optional Napa weekend; that's personal and I'm skipping it."},
+    {"id":"s20","channel":"travel","sender":"Esha","timestamp":"2026-11-16T17:10:00-08:00","text":"Handing this to the overnight travel desk. Please show the reason behind each decision in the morning, especially anything we didn't book."}
+  ],
+  "emails": [
+    {"id":"e01","from":"program@applied-ai.example","to":["esha@northstar.example"],"timestamp":"2026-11-12T08:30:00-08:00","subject":"Your Applied AI Summit talk is accepted","body":"Hi Esha, your retrieval systems talk is accepted for Applied AI Summit in New York City on December 8, 2026. Speaker check-in is that morning. Arriving December 6 or 7 is ideal. Our shuttle serves JFK. Best, Conference program team"},
+    {"id":"e02","from":"maya@atlas.example","to":["rohan@northstar.example"],"timestamp":"2026-11-12T11:50:00-08:00","subject":"Chicago rollout visit","body":"Hi Rohan, we're excited to host you at Atlas in Chicago. You can arrive December 2, 3, or 4, 2026 and we will schedule the rollout around your availability. ORD is closest to the office. Let us know which date works with your personal commitments. Maya"},
+    {"id":"e03","from":"ops@northstar.example","to":["priya@northstar.example"],"timestamp":"2026-11-13T08:00:00-08:00","subject":"SF team offsite details","body":"Hi Priya, the Northstar team offsite starts December 11, 2026 in San Francisco. Please travel from Boston to SFO on December 9 or 10 so you are settled before the sessions. This is an internal offsite, not a conference. Use the ordinary company travel policy."},
+    {"id":"e04","from":"finance@northstar.example","to":["team@northstar.example"],"timestamp":"2026-11-14T09:00:00-08:00","subject":"December travel policy is ready","body":"The current policy is data/policy.md. Approved Tier A conferences have a $600 outbound economy cap, Tier B $350, and customer visits or other work travel $300. Do not carry an exception from one trip to another. Anything outside the policy needs approval before purchase."},
+    {"id":"e05","from":"newsletter@traveldeals.example","to":["team@northstar.example"],"timestamp":"2026-11-15T07:00:00-08:00","subject":"Weekend escapes from $99","body":"Our seasonal sale is here: beaches, ski trips and optional weekend escapes. This is a promotional newsletter, not a request to book company travel. Availability and restrictions apply."}
+  ]
+}

@@ -53,5 +53,5 @@ def hindsight_min(trip: Trip, night: int, seed: int = 17) -> float | None:
     """Only call after the night; never expose this to the timing provider."""
     from agent import eligibility_errors
     values = [o.price for tick in range(32) for o in get_offers(trip, night, tick, seed)
-              if not eligibility_errors(trip, o, tick_time(night, tick)) and o.price <= trip.cap]
+              if not eligibility_errors(trip, o, tick_time(night, tick)) and o.price <= min(trip.cap, 500)]
     return min(values) if values else None

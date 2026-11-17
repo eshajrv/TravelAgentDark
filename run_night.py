@@ -3,7 +3,6 @@ import argparse
 import asyncio
 from contextlib import contextmanager
 from dataclasses import asdict
-from datetime import datetime, timezone, timedelta
 import fcntl
 import importlib
 import inspect
@@ -14,10 +13,10 @@ import os
 
 from agent import decide, eligibility_errors, evaluate_offer, OpenAITimingProvider
 from demo_memory import DemoMemory
-from execution_models import Checkout, Offer, tick_time
+from execution_models import Checkout, Offer, tick_time, parse_time
 from models import Trip, Trace, Decision
 from output import write_snapshot, grade_snapshot
-from payments import MockPayments, LinkPayments
+from payments import MockPayments, LinkPayments, get_backend
 from sim.fares import get_offers
 from state import State
 
@@ -37,14 +36,15 @@ def refresh_escalations(snapshot, state):
     for trace in snapshot['traces']:
         if trace['decision']['action'] == 'ESCALATE' and trace['trip_id'] not in booked:
             items[trace['trip_id']] = {'trip_id': trace['trip_id'], 'reason': trace['decision']['reason']}
-    for op in state.all('operation'):
-        if op['offer']['night'] != snapshot['night']:
+    for op in sorted(state.all('operation'), key=lambda op: (op['offer']['night'], op['offer']['tick'])):
+        if op['offer']['night'] > snapshot['night']:
             continue
         tid = op['offer']['trip_id']
-        if op['status'] in {'pending','unknown','creating','denied','expired'}:
+        if op['status'] in {'pending','unknown','creating','denied','expired','canceled','failed','requires_action','paid_unbooked'}:
             items[tid] = {'trip_id': tid, 'reason': 'Spend request ' + op['status'],
-                          'approval_url': (op.get('checkout') or {}).get('url')}
-        elif op['status'] in {'approved','booked'}:
+                          'approval_url': (op.get('checkout') or {}).get('url'),
+                          'required_action': (op.get('checkout') or {}).get('required_action')}
+        elif op['status'] in {'approved','booked','submitted','succeeded'}:
             items.pop(tid, None)
     snapshot['escalations'] = list(items.values())
 
@@ -73,9 +73,17 @@ def execute_purchase(state, backend, trip, offer, now):
     # Defense in depth at the actual side-effect boundary.
     if eligibility_errors(trip, offer, now) or offer.price > min(trip.cap,500):
         raise ValueError('Payment blocked by policy recheck')
+    existing = next((op for op in state.all('operation')
+                     if op['offer']['id'] == offer.id and op['backend'] == backend.backend), None)
+    if existing:
+        # Crash recovery must not resubmit an ambiguous remote request.
+        if existing['status'] == 'booked' or (backend.backend == 'link' and not existing['checkout']):
+            return existing
     old = state.booking(trip.id)
     if old and backend.backend != 'mock':
         raise ValueError('Stripe replacement requires separate refund orchestration')
+    if old and (now >= parse_time(old['free_cancel_until']) or offer.price >= old['price']):
+        raise ValueError('Replacement must be cheaper and freely cancellable before payment')
     op = state.prepare(offer, backend.backend, trip)
     if op['status'] == 'booked':
         return op
@@ -83,10 +91,6 @@ def execute_purchase(state, backend, trip, offer, now):
         if op['checkout']:
             checkout = Checkout(**op['checkout'])
         else:
-            # Stripe idempotency retention is finite: old unresolved requests
-            # need manual reconciliation instead of blindly creating again.
-            if backend.backend == 'link' and datetime.now(timezone.utc)-datetime.fromisoformat(op['created_at']) >= timedelta(hours=23):
-                raise ValueError('Old unresolved Stripe operation needs manual reconciliation')
             checkout = backend.create_checkout(offer, op['id'])
             op = state.record_checkout(op['id'], checkout)
         if checkout.status == 'paid':
@@ -104,6 +108,14 @@ def event_from(op, trace_index):
 async def run_night_async(night, *, state, memory, backend, output_dir='output', seed=17,
                           decision_provider=decide, memory_mode='cognee_module'):
     tick_time(night,0)  # Validate night before any side effects.
+    if hasattr(memory, 'configure_run'):
+        await call(memory.configure_run, state.run_id, output_dir)
+    if hasattr(memory, 'setup') and not state.get('memory_setup', 'done'):
+        if night != 1:
+            raise ValueError('Run Night 1 first so setup() runs once before extraction')
+        await call(memory.setup)
+        with state.transaction():
+            state.put('memory_setup', 'done', {'completed': True})
     trips = await call(memory.get_trips)
     if not isinstance(trips,list) or not trips or not all(isinstance(t,Trip) for t in trips):
         raise ValueError('get_trips must return a nonempty list[Trip]')
@@ -130,15 +142,40 @@ async def run_night_async(night, *, state, memory, backend, output_dir='output',
             state.put('night',night,snapshot)
         write_snapshot(output_path,snapshot)
 
+    async def deliver_traces():
+        # Sequential delivery per tick. A failed write is retried before any
+        # later tick, independently of already persisted payment operations.
+        for item in state.all('trace_outbox'):
+            data = item['trace']
+            if data['night'] != night or item['sent']:
+                continue
+            try:
+                trace = Trace(**{**data, 'decision': Decision(**data['decision'])})
+                await call(memory.log_trace, trace)
+                with state.transaction():
+                    state.put('trace_outbox', f"{night}:{data['tick']}:{data['trip_id']}", {**item, 'sent': True})
+            except Exception as exc:
+                snapshot['errors'].append({'component': 'log_trace', 'error': type(exc).__name__})
+                snapshot['status'] = 'memory_failed'
+                checkpoint()
+                return False
+        return True
+
+    if not await deliver_traces():
+        return snapshot
+
     for tick in range(snapshot['next_tick'],32):
         now = tick_time(night,tick)
         for trip in trips:
+            if any(t['tick'] == tick and t['trip_id'] == trip.id for t in snapshot['traces']):
+                continue  # A prior process checkpointed only part of this tick.
             offers = get_offers(trip,night,tick,seed)
             eligible = []
             for offer in offers:
                 rejected = eligibility_errors(trip,offer,now)
-                snapshot['observations'].append({'offer':asdict(offer),'eligible':not rejected and offer.price<=trip.cap,
-                                                 'rejection_rules':rejected or (['cap_escalation'] if offer.price>trip.cap else [])})
+                spending_rules = (['cap_escalation'] if offer.price > trip.cap else []) + (['link_request_cap'] if offer.price > 500 else [])
+                snapshot['observations'].append({'offer':asdict(offer), 'eligible':not rejected and not spending_rules,
+                                                 'rejection_rules':rejected + spending_rules})
                 if not rejected:
                     eligible.append(offer)
             # One decision per trip/tick, but all rejected offers remain visible.
@@ -149,7 +186,7 @@ async def run_night_async(night, *, state, memory, backend, output_dir='output',
             booking = state.booking(trip.id)
             pending = state.pending(trip.id)
             context = ''
-            terminal = next((op for op in state.all('operation') if op['offer']['trip_id']==trip.id and op['status'] in {'denied','expired'}),None)
+            terminal = next((op for op in state.all('operation') if op['offer']['trip_id']==trip.id and op['status'] in {'denied','expired','canceled','failed'}),None)
             if terminal:
                 decision = Decision('ESCALATE','Earlier request denied/expired; explicit retry authorization required',['approval_required'])
             elif pending:
@@ -168,6 +205,18 @@ async def run_night_async(night, *, state, memory, backend, output_dir='output',
                     decision = Decision('ESCALATE','Fare exceeds Link $500 request cap',['link_request_cap'])
                 if decision.action=='BUY' and booking and backend.backend!='mock':
                     decision = Decision('ESCALATE','Stripe replacement requires confirmed refund orchestration; retaining original booking',['replacement_requires_review'])
+            intent_key = f'{night}:{tick}:{trip.id}'
+            intent = state.get('decision_intent', intent_key)
+            if intent:
+                # Preserve the original BUY/rationale across a crash between
+                # an external side effect and the following snapshot write.
+                offer = Offer.from_dict(intent['offer'])
+                decision = Decision(**intent['decision'])
+                context = intent['context']
+            else:
+                with state.transaction():
+                    state.put('decision_intent', intent_key, {'offer': asdict(offer),
+                              'decision': asdict(decision), 'context': context})
             trace = Trace(night,tick,trip.id,offer.price,decision)
             trace_index = len(snapshot['traces'])
             snapshot['traces'].append(asdict(trace))
@@ -187,23 +236,10 @@ async def run_night_async(night, *, state, memory, backend, output_dir='output',
                 key = f'{night}:{tick}:{trip.id}'
                 if not state.get('trace_outbox',key):
                     state.put('trace_outbox',key,{'trace':asdict(trace),'sent':False})
+            checkpoint()
         snapshot['next_tick']=tick+1
         checkpoint()
-
-    # Retry memory writes without ever rerunning checkout creation.
-    for item in state.all('trace_outbox'):
-        data = item['trace']
-        if data['night']!=night or item['sent']:
-            continue
-        try:
-            trace = Trace(**{**data,'decision':Decision(**data['decision'])})
-            await call(memory.log_trace,trace)
-            with state.transaction():
-                state.put('trace_outbox',f"{night}:{data['tick']}:{data['trip_id']}",{**item,'sent':True})
-        except Exception as exc:
-            snapshot['errors'].append({'component':'log_trace','error':type(exc).__name__})
-            snapshot['status']='memory_failed'
-            checkpoint()
+        if not await deliver_traces():
             return snapshot
 
     # Recover execution evidence if a crash occurred after booking but before a tick export.
@@ -242,7 +278,7 @@ def run_night(night: int, *, memory=None, backend=None, state_path='output/engin
         try:
             memory = memory or (DemoMemory(state) if demo else importlib.import_module('memory'))
             snapshot = asyncio.run(run_night_async(night,state=state,memory=memory,
-                backend=backend or (MockPayments() if demo else LinkPayments()),
+                backend=backend or get_backend(),
                 output_dir=output_dir,seed=seed,decision_provider=decision_provider,
                 memory_mode='offline_demo_fixture' if demo else 'cognee_module'))
             return [Trace(**{**t,'decision':Decision(**t['decision'])}) for t in snapshot['traces']]

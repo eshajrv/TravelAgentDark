@@ -1,62 +1,70 @@
 # Rohan's night engine
 
-Cognee stays; production imports Esha's `memory` module. `--demo` is explicitly an offline fixture, not evidence of Cognee integration. No real flight purchase occurs in either mode.
+Cognee stays. Native runs use Esha's `memory.py`; `--demo` is an explicitly labeled offline memory fixture. Fares, bookings and refunds are simulated. Neither mode purchases a real flight.
 
-## Offline run
-
-```sh
-python3 run_night.py --demo --nights 1 2 --run-id demo --output-dir output
-python3 -m unittest discover -s tests -v
-```
-
-Use a new run ID and output directory for a clean experiment. SQLite retains bookings and lessons between nights. Repeating a completed night returns its saved output. Seeds control fares, not LLM responses. Engine tests run without third-party dependencies (including on Python 3.9); use the team's Python 3.10+ environment for Cognee.
-
-## Cognee and LLM integration
-
-Esha's module supplies `get_trips()`, `recall_context(trip_id)`, `log_trace(trace)`, `end_night(night)`. Sync and async implementations are accepted. An optional `prepare_hindsight(snapshot)` receives eligible observations and confirmed simulated executions before improvement; the same evidence is written to `output/night_N.json` before end_night runs. The function returns `list[str]` lessons. Existing shared models remain unchanged.
+## Offline acceptance run
 
 ```sh
-python3 run_night.py --memory-module memory --llm --night 1
+.venv/bin/python run_night.py --demo --nights 1 2 --run-id acceptance --output-dir output/acceptance
+.venv/bin/python -m pytest tests -q
 ```
 
-Set `LLM_API_KEY` (or `OPENAI_API_KEY`) and `LLM_MODEL`. `--llm` uses the OpenAI SDK already in requirements.txt and interprets recalled Cognee prose. Without it, the deterministic timing baseline recognizes JSON context containing `timing_rule: {target_price, lesson}`; plain prose without a structured target produces an under-cap baseline buy. An injected `--decision-provider module:function` can replace timing. Hard checks always run before a payment request.
+Use a new run ID **and output directory** for a clean experiment. SQLite preserves bookings and lessons between nights; repeating a completed night returns the saved output. Seeds determine fares, not LLM responses.
 
-## Link Agent Wallet, not Stripe Checkout
+The deterministic fixture buys Esha at $412 on Night 1, observes an eligible $287 low, then recalls a trial target and replaces at $291 on a different Night 2. Her simulated full refund is $412 and replacement savings is $121. Rohan's forbidden December 3 fare is rejected; Priya stays above cap and escalates. These are synthetic results, not measured travel savings or a reliable fare trend.
 
-The backend matches models.py: `MockPayments` and `LinkPayments` expose `request_payment(amount, merchant, reason)` and `get_payment(request_id)`. `PAYMENTS_BACKEND=mock|link` chooses it; CLI `--payment-mode` overrides it. Mock approval and booking are synthetic.
+## Esha's memory handoff
 
-Install and authenticate the official `@stripe/link-cli` separately. Set `LINK_MERCHANT_URL` to the actual merchant URL. Run:
+The agreed public imports remain:
+
+```python
+from memory import setup, get_trips, recall_context, log_trace, end_night
+```
+
+The runner calls `setup()` once before Night 1, records its successful completion in SQLite, then calls `get_trips()`. Each tick recalls policy/lessons for trips needing a decision and sends each trip's trace through `log_trace()`, sequentially. At the end it calls `end_night(n)`. A failed trace write stops progress and is retried before a later tick without repeating a payment. No automatic reset or `forget()` occurs.
+
+Optional additive handoffs are implemented: `configure_run(run_id, output_dir)` selects local caches and run-scoped Cognee session IDs; `prepare_hindsight(snapshot)` supplies eligible offers and confirmed simulated execution evidence before grading. No existing Trip/Decision/Trace fields or public function signatures changed.
+
+The runner alone owns `output_dir/night_N.json`. Memory uses `output_dir/.memory/traces_N.json`, `hindsight_N.json`, and `lessons.json`. Trace retries deduplicate by night/tick/trip; a crash after Cognee accepts a write but before the local acknowledgement can still redeliver that external write. Aman's current `slack_messages`/`emails` and Esha's older `slack`/`email` input keys are both accepted. Tick 0 is 22:00 Pacific in the engine, memory, and dashboard.
+
+**Only run one Cognee script at a time.** Do not run `memory.py`, `try_memory.py`, the native runner or the live preflight concurrently.
+
+## Native Cognee and decision LLM
+
+The local Python 3.12 environment has Cognee 1.6.8. `requirements-engine.lock.txt` records installed engine/test versions for macOS arm64. Configure the team's `LLM_API_KEY` and `LLM_MODEL` in the local `.env` (exported environment variables take precedence); never commit keys.
 
 ```sh
-PAYMENTS_BACKEND=link python3 run_night.py --demo --night 1
-PAYMENTS_BACKEND=link python3 run_night.py --reconcile
+.venv/bin/python scripts/check_cognee.py
+.venv/bin/python run_night.py --memory-module memory --llm --payment-mode mock --nights 1 2 --run-id cognee-check --output-dir output/cognee-check
 ```
 
-The Link adapter always passes `--test`, uses an idempotency key, enforces the $500 project cap and returns the approval URL. Approval does not mean payment or booking. Reconciliation polls existing request IDs and retrieves approved test credentials with `--output-file` into a protected temporary directory. It never opens that file, logs raw CLI output, submits the card to a merchant, or confirms a real booking. Live wallet authentication/approval was not exercised during offline tests.
+The first command only checks imports and function signatures. `scripts/check_cognee.py --run` is an optional service smoke test using a unique dataset, without deleting memory. The runner automatically handles setup; do not separately run a reset.
 
-Credentials remain in the private temp directory for the operator; remove them after the demonstration. `card_file` is only returned by direct get_payment, never copied into engine JSON. Pending requests become morning escalation items. Unknown creates are blocked for manual reconciliation instead of being retried with a new key. Denied/expired requests are not automatically resubmitted during the same run.
+Use `--llm` for native Cognee prose lessons. Without it, the deterministic baseline buys eligible under-cap fares and recognizes only JSON `timing_rule` targets; it does not interpret Esha's prose. `--decision-provider module:function` can inject another timing provider. Code always checks dates, itinerary, cap, quote expiry, and free cancellation before payment. The $500 Link request limit applies alongside trip caps.
 
-Official references: https://docs.link.com/quickstart/overview and https://docs.link.com/cli/reference . Current docs specify a 30-minute approval window; trust provider status rather than the older plan's 10-minute claim.
+Live model calls, extraction quality, Cognee service learning and Link approval remain unverified locally: no model key/model, merchant URL or Link CLI is configured. Tests exercise Esha's actual wrapper against a fake Cognee service and a deterministic timing provider; that is interface evidence, not a live learning claim.
 
-## Outputs and limits
+## Link Agent Wallet payments
 
-`examples/engine_output.json` is a shortened mock example for Aman. Full outputs contain existing trips/traces/lessons plus observations, execution_events, bookings, recalled_context, errors, escalations, and metrics. BUY is a decision; execution status `booked` represents a **simulated** booking only. `approved` on Link is a credential state, never a booking. No shared team budget is enforced; trip caps and the Link $500 cap both apply.
+`MockPayments` and `LinkPayments` preserve `request_payment(amount, merchant, reason)` and `get_payment(request_id)`. Set `PAYMENTS_BACKEND=mock|link`, or use CLI `--payment-mode`. `--demo` selects fixture memory; payment backend selection remains explicit and consistent in the Python and CLI entry points.
 
-Night 2 uses new fares and retains Night 1 bookings. Mock replacement atomically refunds/replaces only while free cancellation remains valid. Link mode never performs remote refunds or purchases. Hindsight excludes invalid offers and unpaid decisions. First-night lows are observations, not proof of a reliable route trend.
-
-One process holds the state lock. External memory logging is at-least-once across a crash at the acknowledgement boundary; Esha should deduplicate by night/tick/trip. Payment operations have separate durable keys. The engine batches Cognee trace delivery after observation ticks; UI snapshots are written every tick. Native Cognee integration awaits Esha's module and API configuration. Optional Jinko is intentionally deferred.
-
-## Local Cognee environment and regression checks
-
-The local `.venv` uses Python 3.12 with Cognee 1.6.8. `requirements-engine.lock.txt` records the installed engine/test dependency versions (macOS arm64); the shared requirements.txt is unchanged.
+Install and authenticate the official `@stripe/link-cli` separately and set `LINK_MERCHANT_URL` to the actual merchant HTTPS URL. Link mode always uses `--test`, a durable idempotency key, and the $500 request cap.
 
 ```sh
-source .venv/bin/activate
-python -m pytest tests -q
-python scripts/check_cognee.py
-python scripts/check_cognee.py --run
+.venv/bin/python run_night.py --demo --payment-mode link --night 1 --run-id link-check --output-dir output/link-check
+.venv/bin/python run_night.py --payment-mode link --reconcile --run-id link-check --output-dir output/link-check
 ```
 
-The first Cognee command checks import/signature compatibility only. `--run` calls configured LLM/embedding services using a unique smoke-test dataset and never calls `forget`. Set `LLM_API_KEY` and the team's `LLM_MODEL` in a local `.env`; the runner loads it without overriding exported environment variables. No API key is bundled. Native `memory.py` remains Esha's handoff; installing Cognee does not implement that wrapper.
+Pending requests expose an approval URL. `requires_action` retains the provider's resolution/message/action URL for human follow-up. Approved credentials, submitted payments, and succeeded payment statuses remain distinct and never become a flight booking. Denied/expired/canceled/failed requests require explicit retry authorization. Unknown creates remain blocked for manual reconciliation instead of being automatically resubmitted.
 
-Payment reconciliation now rebuilds morning escalations. Approved requests remove stale pending warnings without creating bookings. Denied/expired requests require explicit retry authorization; use a new run only after that authorization. Twelve offline tests pass, including async memory compatibility. Full two-night exports were read by Aman's current ui_data.py: 96 traces and three trips per night, no parser warnings. The UI still needs to render additive execution/payment fields and respect memory_mode when labeling lessons.
+Reconciliation retrieves approved test credentials via `--output-file` into a protected temporary directory; it never reads the credential file, logs raw CLI output, sends the card to a merchant, or confirms a flight. Delete the private temporary credential file after the demonstration. `card_file` is returned only by the direct payment API and is excluded from engine JSON.
+
+Official references: [CLI](https://docs.link.com/cli/reference), [request lifecycle](https://docs.link.com/concepts/spend-requests), [quickstart](https://docs.link.com/quickstart/overview). The approval window is currently 30 minutes; use provider status and returned expiry values.
+
+## Exports and recovery
+
+Versioned exports retain nested decisions and trips/traces/lessons, plus observations, execution_events, bookings, recalled_context, errors, escalations and metrics. `booked` means a confirmed **simulated** booking. Only those executions receive purchase regret. Forbidden dates and otherwise ineligible offers are excluded from eligible minima; unapproved BUY proposals cannot generate purchase regret or booking savings.
+
+Night 2 retains Night 1's booking and uses different fares. Mock replacement checks free cancellation and a cheaper total before issuing payment, then atomically records full refund and replacement in SQLite. Failed replacement preserves the original. Link mode has no remote booking/refund orchestration.
+
+One runner holds the state-file lock. Durable decision intents preserve the original decision across a crash after booking; per-trip checkpoints and the trace outbox prevent duplicate trip/tick rows and repeated purchases on resume. Exports are written atomically. Jinko remains deferred.

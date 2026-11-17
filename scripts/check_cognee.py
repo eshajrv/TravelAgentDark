@@ -29,6 +29,9 @@ def main():
     parser.add_argument('--run',action='store_true',help='Call configured LLM/embedding services; may incur API charges')
     args=parser.parse_args()
     load_configuration()
+    root = Path(__file__).resolve().parents[1]
+    os.environ.setdefault('SYSTEM_ROOT_DIRECTORY', str(root / '.cognee_system'))
+    os.environ.setdefault('DATA_ROOT_DIRECTORY', str(root / '.cognee_data'))
     import cognee
     print('Cognee:',importlib.metadata.version('cognee'))
     checks={'remember':['dataset_name','session_id','self_improvement'],'recall':['datasets'],'improve':['dataset','session_ids']}

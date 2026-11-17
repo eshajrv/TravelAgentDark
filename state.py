@@ -60,7 +60,8 @@ class State:
 
     def pending(self, trip_id):
         return next((o for o in self.all('operation') if o['offer']['trip_id'] == trip_id
-                     and o['status'] in {'creating','pending','unknown','paid_unbooked','approved'}), None)
+                     and o['status'] in {'creating','pending','unknown','paid_unbooked','approved',
+                                        'requires_action','submitted','succeeded'}), None)
 
     def prepare(self, offer, backend, trip):
         operation_id = sha256(f'{self.run_id}:{offer.id}:{backend}'.encode()).hexdigest()

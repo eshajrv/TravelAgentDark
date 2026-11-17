@@ -38,6 +38,8 @@ def grade_snapshot(snapshot):
         minima[tid] = min(minima.get(tid, float('inf')), offer['price'])
     executed = {e['trace_index']:e for e in snapshot['execution_events'] if e['status']=='booked'}
     for i, trace in enumerate(snapshot['traces']):
+        trace['hindsight_min'] = None
+        trace['regret'] = None
         if i in executed:
             trace['hindsight_min'] = minima.get(trace['trip_id'])
             trace['regret'] = round(max(0, trace['price']-minima[trace['trip_id']]), 2) if trace['trip_id'] in minima else None

@@ -72,6 +72,10 @@ def evaluate_offer(trip: Trip, offer: Offer, context: str, now: datetime,
         return Decision('WAIT', 'Rejected offer: ' + ', '.join(errors), errors)
     if offer.price > trip.cap:
         return Decision('ESCALATE', 'Fare exceeds trip cap', ['cap_escalation'])
+    if offer.price > 500:
+        return Decision('ESCALATE', 'Fare exceeds Link $500 request cap', ['link_request_cap'])
+    if not isinstance(context, str) or not context.strip():
+        return Decision('ESCALATE', 'Memory context unavailable', ['memory_required'])
     if booking:
         if now >= parse_time(booking['free_cancel_until']):
             return Decision('WAIT', 'Existing booking is no longer freely cancellable', ['free_cancellation'])

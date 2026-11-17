@@ -15,8 +15,8 @@ def cents(amount: float) -> int:
 def tick_time(night: int, tick: int) -> datetime:
     if night < 1 or not 0 <= tick < 32:
         raise ValueError("Expected night >= 1 and tick 0..31")
-    # 20:00 PST on Nov 16; explicit UTC avoids host-timezone dependence.
-    return datetime(2026, 11, 17, 4, tzinfo=timezone.utc) + timedelta(days=night-1, minutes=15*tick)
+    # 22:00 PST on Nov 16, matching memory.py and the dashboard's clock.
+    return datetime(2026, 11, 17, 6, tzinfo=timezone.utc) + timedelta(days=night-1, minutes=15*tick)
 
 
 def parse_time(value: str) -> datetime:
@@ -59,4 +59,6 @@ class Checkout:
     currency: str
     backend: str
     operation_id: str
+    provider_status: str | None = None
+    required_action: dict | None = None
 

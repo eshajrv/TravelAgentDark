@@ -43,6 +43,7 @@ os.environ.setdefault("DATA_ROOT_DIRECTORY", str(_HERE / ".cognee_data"))
 import cognee  # noqa: E402  (needs the env loaded first)
 
 from models import Decision, Trace, Trip  # noqa: E402
+from output import grade_snapshot, write_snapshot  # noqa: E402
 
 DATASET = "redeye"
 ROOT = Path(__file__).parent
@@ -53,8 +54,23 @@ LESSONS_FILE = OUTPUT / "lessons.json"  # every lesson learned, by night
 TICKS_START_HOUR = 22                   # tick 0 = 10:00 PM, 4 ticks per hour
 LINK_MAX = 500.0                        # Stripe Link's per-request cap (see BUILD_PLAN.md)
 HOME_AIRPORT = os.getenv("HOME_AIRPORT", "SFO")  # used when a message doesn't say where they fly from
+RUN_ID = "default"
 
 OUTPUT.mkdir(exist_ok=True)
+
+
+def configure_run(run_id: str, output_dir) -> None:
+    """Optional runner handoff; isolate local caches and Cognee night sessions."""
+    global OUTPUT, TRIPS_FILE, LESSONS_FILE, RUN_ID
+    RUN_ID = run_id
+    OUTPUT = Path(output_dir).resolve()
+    OUTPUT.mkdir(parents=True, exist_ok=True)
+    TRIPS_FILE = OUTPUT / "trips.json"
+    LESSONS_FILE = OUTPUT / ".memory" / "lessons.json"
+
+
+def _session(night: int) -> str:
+    return f"{RUN_ID}:night_{night}"
 
 
 # ---------------------------------------------------------------------------
@@ -110,13 +126,15 @@ def _workspace() -> dict:
 
 
 def _workspace_text(ws: dict) -> str:
-    """Slack + email as readable lines, oldest first."""
+    """Slack + email as readable lines with timestamps and source evidence IDs."""
     lines = []
-    for m in ws.get("slack", []):
-        lines.append(f"[Slack {m.get('channel', '')} {m.get('ts', '')}] {m['user']}: {m['text']}")
-    for e in ws.get("email", []):
+    for m in ws.get("slack_messages", ws.get("slack", [])):
+        lines.append(f"[Slack {m.get('id', '')} {m.get('channel', '')} "
+                     f"{m.get('timestamp', m.get('ts', ''))}] "
+                     f"{m.get('sender', m.get('user', ''))}: {m['text']}")
+    for e in ws.get("emails", ws.get("email", [])):
         lines.append(
-            f"[Email {e.get('date', '')}] From {e.get('from', '')} to {e.get('to', '')}, "
+            f"[Email {e.get('id', '')} {e.get('timestamp', e.get('date', ''))}] From {e.get('from', '')} to {e.get('to', '')}, "
             f"subject \"{e.get('subject', '')}\": {e.get('body', '')}"
         )
     return "\n".join(lines)
@@ -205,7 +223,7 @@ def get_trips(refresh: bool = False) -> list[Trip]:
         # Fallback: hand Cognee's LLM the raw messages directly
         trips = _parse_trips(_llm(_TRIP_PROMPT + "\n\nPOLICY:\n" + _policy_text()
                                   + "\n\nMESSAGES:\n" + _workspace_text(_workspace())))
-    TRIPS_FILE.write_text(json.dumps([asdict(t) for t in trips], indent=2))
+    write_snapshot(TRIPS_FILE, [asdict(t) for t in trips])
     return trips
 
 
@@ -277,7 +295,7 @@ def recall_context(trip_id: str) -> str:
 # log_trace: every decision goes into that night's session
 # ---------------------------------------------------------------------------
 def _night_file(night: int) -> Path:
-    return OUTPUT / f"night_{night}.json"
+    return OUTPUT / ".memory" / f"traces_{night}.json"
 
 
 def _load_night(night: int) -> list[dict]:
@@ -286,15 +304,21 @@ def _load_night(night: int) -> list[dict]:
 
 
 def _save_night(night: int, rows: list[dict]) -> None:
-    _night_file(night).write_text(json.dumps(rows, indent=2))
+    write_snapshot(_night_file(night), rows)
+
+
+def prepare_hindsight(snapshot: dict) -> None:
+    """Receive eligible offers and executed outcomes; never overwrite the UI export."""
+    write_snapshot(OUTPUT / ".memory" / f"hindsight_{snapshot['night']}.json", snapshot)
 
 
 def log_trace(trace: Trace) -> None:
-    """Save one decision: to output/night_N.json (for the UI) and to Cognee's night session."""
+    """Send one tick's decision to Cognee and keep a separate, deduplicated cache."""
     row = asdict(trace)
     rows = _load_night(trace.night)
-    rows.append(row)
-    _save_night(trace.night, rows)
+    key = (trace.night, trace.tick, trace.trip_id)
+    if any((r['night'], r['tick'], r['trip_id']) == key for r in rows):
+        return
 
     d = trace.decision
     note = (
@@ -302,7 +326,9 @@ def log_trace(trace: Trace) -> None:
         f"was ${trace.price:.0f}. Decision {d.action}: {d.reason}. "
         f"Rules used: {', '.join(d.rules_used) or 'none'}."
     )
-    _run(cognee.remember(note, dataset_name=DATASET, session_id=f"night_{trace.night}", self_improvement=False))
+    _run(cognee.remember(note, dataset_name=DATASET, session_id=_session(trace.night), self_improvement=False))
+    rows.append(row)
+    _save_night(trace.night, rows)
 
 
 # ---------------------------------------------------------------------------
@@ -310,48 +336,49 @@ def log_trace(trace: Trace) -> None:
 # ---------------------------------------------------------------------------
 def end_night(night: int) -> list[str]:
     """Grade the night in hindsight, let Cognee learn from it, and return the new lessons."""
-    rows = _load_night(night)
-    if not rows:
-        return []
-    trips = {t.id: t for t in get_trips()}
+    path = OUTPUT / ".memory" / f"hindsight_{night}.json"
+    if not path.exists():
+        raise ValueError('Runner must supply prepare_hindsight(snapshot) before grading')
+    snapshot = json.loads(path.read_text())
+    grade_snapshot(snapshot)
+    rows = snapshot['traces']
+    trips = {t['id']: Trip(**t) for t in snapshot['trips']}
 
     new_lessons: list[dict] = []
     for trip_id in sorted({r["trip_id"] for r in rows}):
-        trip_rows = [r for r in rows if r["trip_id"] == trip_id]
-        low = min(trip_rows, key=lambda r: r["price"])
-        first = trip_rows[0]
-        bought = next((r for r in trip_rows if r["decision"]["action"] == "BUY"), None)
-
-        for r in trip_rows:
-            r["hindsight_min"] = low["price"]
-            if r["decision"]["action"] == "BUY":
-                r["regret"] = round(r["price"] - low["price"], 2)
-
+        offers = [o['offer'] for o in snapshot['observations']
+                  if o['eligible'] and o['offer']['trip_id'] == trip_id]
+        executed = [e for e in snapshot['execution_events']
+                    if e['status'] == 'booked' and e['offer']['trip_id'] == trip_id]
+        bought = min(executed, key=lambda e: e['offer']['tick'])['offer'] if executed else None
         trip = trips.get(trip_id)
         route = _route(trip) if trip else trip_id
-        drop = (first["price"] - low["price"]) / first["price"] * 100 if first["price"] else 0
-        if bought:
+        if not offers:
+            lesson = f'{route}: no policy-eligible fare was observed; retain constraints and escalate. No completed purchase.'
+        elif bought:
+            low = min(offers, key=lambda o: (o['price'], o['tick']))
             regret = bought["price"] - low["price"]
             lesson = (
-                f"{route}: we bought at ${bought['price']:.0f} at {tick_time(bought['tick'])}, but the night's "
-                f"low was ${low['price']:.0f} at {tick_time(low['tick'])} (${regret:.0f} of regret). "
-                f"Fares fell {drop:.0f}% from the start of the night, so waiting until about "
-                f"{tick_time(low['tick'])} is better than buying early."
+                f"{route}: simulated booking at ${bought['price']:.0f} at {tick_time(bought['tick'])}; "
+                f"eligible low ${low['price']:.0f} at {tick_time(low['tick'])} (${regret:.0f} hindsight regret). "
+                f"Try waiting for a comparable fare around ${low['price'] * 1.05:.2f} on a later night, "
+                "only while the existing booking is freely cancellable. This one simulated night does not establish a route trend."
                 if regret > 0
-                else f"{route}: we bought at the night's low of ${low['price']:.0f} at {tick_time(low['tick'])}. "
-                f"Buying around {tick_time(low['tick'])} worked."
+                else f"{route}: simulated booking matched the eligible low ${low['price']:.0f} at {tick_time(low['tick'])}. "
+                "One simulated observation, not a reliable timing rule."
             )
         else:
+            low = min(offers, key=lambda o: (o['price'], o['tick']))
             lesson = (
-                f"{route}: we didn't buy. The night's low was ${low['price']:.0f} at {tick_time(low['tick'])}, "
-                f"{drop:.0f}% below the first fare of the night."
+                f"{route}: no completed booking. Eligible observed low ${low['price']:.0f} "
+                f"at {tick_time(low['tick'])}. BUY proposals and Link credential approval are not bookings."
             )
         new_lessons.append({"night": night, "route": route, "trip_id": trip_id, "lesson": lesson})
 
     _save_night(night, rows)
 
     async def learn():
-        session = f"night_{night}"
+        session = _session(night)
         # The graded results go into the night's session with explicit numbers...
         for x in new_lessons:
             await cognee.remember(f"Hindsight grade for night {night}: {x['lesson']}",
@@ -365,7 +392,7 @@ def end_night(night: int) -> list[str]:
     _run(learn())
 
     all_lessons = [x for x in _lessons() if x["night"] != night] + new_lessons
-    LESSONS_FILE.write_text(json.dumps(all_lessons, indent=2))
+    write_snapshot(LESSONS_FILE, all_lessons)
     return [x["lesson"] for x in new_lessons]
 
 
