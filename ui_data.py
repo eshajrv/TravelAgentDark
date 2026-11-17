@@ -19,6 +19,11 @@ class Night:
     warnings: list[str] = field(default_factory=list)
     source: str = ""
     demo: bool = False
+    metadata: dict = field(default_factory=dict)
+    observations: list[dict] = field(default_factory=list)
+    executions: list[dict] = field(default_factory=list)
+    bookings: list[dict] = field(default_factory=list)
+    metrics: dict = field(default_factory=dict)
 
 
 def money(value: object) -> float:
@@ -68,6 +73,39 @@ def read_night(path: Path, number: int, *, demo: bool = False) -> Night:
     try:
         raw = json.loads(path.read_text())
         if isinstance(raw, dict):
+            result.metadata = {key: raw[key] for key in ("run_id", "status", "mode", "payment_backend", "memory_mode") if isinstance(raw.get(key), str)}
+            # Copy only display fields. Never retain card_file, raw CLI output,
+            # credentials, or unknown payment fields from execution records.
+            for item in raw.get("observations", []) if isinstance(raw.get("observations"), list) else []:
+                try:
+                    offer = item["offer"]
+                    observation = {"trip_id":str(offer["trip_id"]), "tick":integer(offer["tick"], "tick"), "price":money(offer["price"]), "date":str(offer.get("travel_date", "")), "eligible":item.get("eligible") is True, "rules":", ".join(str(r) for r in item.get("rejection_rules", []))}
+                    if not 0 <= observation["tick"] <= 31:
+                        raise ValueError("observation tick outside 0–31")
+                    result.observations.append(observation)
+                except (ValueError, TypeError, KeyError, AttributeError):
+                    result.warnings.append("Omitted an invalid market observation.")
+            for event in raw.get("execution_events", []) if isinstance(raw.get("execution_events"), list) else []:
+                try:
+                    offer = event["offer"]
+                    payment = event.get("checkout") or event.get("payment") or {}
+                    result.executions.append({"Trip":str(offer["trip_id"]), "Tick":integer(offer["tick"], "tick"), "Fare":money(offer["price"]), "Execution":str(event.get("status", "unknown")), "Payment":str(payment.get("status", "unknown")), "Backend":str(event.get("backend", "unknown"))})
+                except (ValueError, TypeError, KeyError, AttributeError):
+                    result.warnings.append("Omitted an invalid payment execution record.")
+            for booking in raw.get("bookings", []) if isinstance(raw.get("bookings"), list) else []:
+                try:
+                    result.bookings.append({"Trip":str(booking["trip_id"]), "Date":str(booking.get("travel_date", "")), "Fare":money(booking["price"]), "Status":str(booking.get("status", "unknown")), "Backend":str(booking.get("payment_backend", "unknown"))})
+                except (ValueError, TypeError, KeyError, AttributeError):
+                    result.warnings.append("Omitted an invalid booking record.")
+            for key in ("simulated_replacement_savings", "confirmed_real_flight_savings"):
+                try:
+                    if isinstance(raw.get("metrics"), dict) and key in raw["metrics"]:
+                        result.metrics[key] = money(raw["metrics"][key])
+                except (ValueError, TypeError):
+                    result.warnings.append(f"Omitted invalid {key}.")
+            for error in raw.get("errors", []) if isinstance(raw.get("errors"), list) else []:
+                if isinstance(error, dict):
+                    result.warnings.append(f"Runner reported an error in {error.get('component', 'unknown component')}; inspect runner diagnostics.")
             rows = raw.get("traces", [])
             raw_trips = raw.get("trips", [])
             if not isinstance(raw_trips, list):

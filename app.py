@@ -25,7 +25,9 @@ h3 {font-size:1.15rem!important;font-weight:600!important;letter-spacing:-.02em}
 h4 {font-size:.95rem!important;font-weight:600!important}
 p, label {font-size:.88rem!important;line-height:1.55}
 [data-testid="stCaptionContainer"] p {font-size:.76rem!important;color:#626975;line-height:1.5}
+[data-testid="stCaptionContainer"] {opacity:1!important;color:#626975!important}
 [data-testid="stMetricValue"] {font-size:2rem;font-variant-numeric:tabular-nums;font-weight:500;letter-spacing:-.035em}
+[data-testid="stMetricValue"] p {font-size:2rem!important;line-height:1.15!important}
 [data-testid="stMetricLabel"] {color:#626975}
 [data-testid="stSidebar"] {border-right:1px solid #E2E5E9;background:#F8F9FA;min-width:230px;max-width:260px}
 [data-testid="stSidebar"] h2 {font-size:1.3rem!important;letter-spacing:.03em}
@@ -82,7 +84,11 @@ needs_review = [t for t in latest.values() if t.decision.action == "ESCALATE"]
 if demo:
     st.caption(f"DEMO FIXTURES · {clock_label(tick)} simulated time · Handwritten trips and illustrative lessons. No agent run or payment occurred.")
 else:
-    st.caption(f"RUNNER OUTPUT · {clock_label(tick)} simulated time · BUY records show intent, not payment or booking confirmation.")
+    st.caption(f"RUNNER OUTPUT · Tick {tick} of 31 · BUY records show intent, not payment or booking confirmation.")
+    meta = night.metadata
+    st.caption(f"Run: {meta.get('run_id', 'not exported')} / Status: {meta.get('status', 'not exported')} / Memory: {meta.get('memory_mode', 'not exported')} / Payments: {meta.get('payment_backend', 'not exported')}")
+    if meta.get("memory_mode") == "offline_demo_fixture":
+        st.info("This runner used offline memory fixtures. Its lessons are not evidence of a Cognee run.")
 for warning in night.warnings:
     st.warning(warning)
 
@@ -92,7 +98,7 @@ stats[1].metric("Purchase decisions", len(buys))
 stats[2].metric("Needs human review", len(needs_review))
 stats[3].metric("Selected fare total", f"${sum(t.price for t in buys.values()):,.0f}")
 
-overview, decisions, workspace, pitch = st.tabs(["Overnight overview", "Decision log", "Workspace & policy", "Demo & pitch"])
+overview, decisions, execution, workspace, pitch = st.tabs(["Overview", "Decisions", "Payments & bookings", "Workspace & policy", "Demo & pitch"])
 
 with overview:
     st.subheader("Itineraries")
@@ -122,15 +128,21 @@ with overview:
         if ids:
             selected = st.selectbox("Route", ids, format_func=lambda key: f"{trip_map[key].traveler} · {trip_map[key].origin} → {trip_map[key].dest}" if key in trip_map else key, key="route")
             traces = [t for t in visible if t.trip_id == selected]
-            rows = [{"tick":t.tick,"price":t.price,"action":t.decision.action,"reason":t.decision.reason,"time":clock_label(t.tick)} for t in traces]
+            rows = [{"tick":t.tick,"price":t.price,"action":t.decision.action,"reason":t.decision.reason,"time":clock_label(t.tick) if demo else f"Tick {t.tick}"} for t in traces]
             market = [{"tick":r["tick"],"price":r["price"]} for r in rows]
+            eligible = [o for o in night.observations if o["trip_id"] == selected and o["tick"] <= tick and o["eligible"]]
+            if eligible:
+                lows = {}
+                for o in eligible:
+                    lows[o["tick"]] = min(lows.get(o["tick"], float("inf")), o["price"])
+                market = [{"tick":t,"price":p} for t,p in sorted(lows.items())]
             if demo:
                 path = DEMO / f"market_{night_number}.json"
                 if path.exists():
                     curve = [r for r in json.loads(path.read_text()) if r["trip_id"] == selected and r["tick"] <= tick]
                     market = curve or market
             if rows:
-                x = alt.X("tick:Q", title="15-minute tick · 22:00 to 05:45", scale=alt.Scale(domain=[0,31]), axis=alt.Axis(values=[0,4,8,12,16,20,24,28,31]))
+                x = alt.X("tick:Q", title="15-minute tick · 22:00 to 05:45" if demo else "Observation tick", scale=alt.Scale(domain=[0,31]), axis=alt.Axis(values=[0,4,8,12,16,20,24,28,31]))
                 line = alt.Chart(pd.DataFrame(market)).mark_line(color="#6D7A94",strokeWidth=2).encode(x=x,y=alt.Y("price:Q",title="Fare (USD)",scale=alt.Scale(zero=False)))
                 marks = alt.Chart(pd.DataFrame(rows)).mark_point(filled=True,size=85).encode(x=x,y="price:Q",color=alt.Color("action:N",title="Decision",scale=alt.Scale(domain=list(COLORS),range=list(COLORS.values()))),shape=alt.Shape("action:N",scale=alt.Scale(domain=list(COLORS),range=["triangle-up","circle","diamond"]),legend=None),tooltip=["time:N","action:N",alt.Tooltip("price:Q",format="$,.2f"),"reason:N"])
                 chart = line + marks
@@ -138,17 +150,21 @@ with overview:
                     cap = alt.Chart(pd.DataFrame([{"cap":trip_map[selected].cap}])).mark_rule(color="#A65A24",strokeDash=[4,4],opacity=.65).encode(y="cap:Q",tooltip=[alt.Tooltip("cap:Q",title="Policy cap",format="$,.0f")])
                     chart += cap
                 st.altair_chart(chart.properties(height=310).configure_view(strokeWidth=0),width="stretch")
-                st.caption("Dashed line = policy cap. Hover over a marker for the reason. Market observations may continue after a purchase decision." if demo else "Dashed line = policy cap. Chart shows exported decisions; unobserved fares are not invented.")
+                st.caption("Dashed line = policy cap. Hover over a marker for the reason. Market observations may continue after a purchase decision." if demo else ("Line = lowest eligible observed fare per tick. Markers = decisions; rejected offers appear below." if eligible else "Dashed line = policy cap. Chart shows exported decisions; unobserved fares are not invented."))
                 if tick == 31:
                     graded = [t for t in traces if t.decision.action == "BUY" and t.hindsight_min is not None]
                     for t in graded:
                         st.caption(f"Hindsight: selected ${t.price:,.0f}; eligible low ${t.hindsight_min:,.0f}" + (f"; reported regret ${t.regret:,.0f}." if t.regret is not None else "."))
             else:
                 st.info("No fare decisions for this route at the selected tick.")
+            rejected = [o for o in night.observations if o["trip_id"] == selected and o["tick"] <= tick and not o["eligible"]]
+            if rejected:
+                with st.expander(f"Rejected fare observations ({len(rejected)})"):
+                    st.dataframe(pd.DataFrame(rejected)[["tick","date","price","rules"]],hide_index=True,width="stretch")
     with lesson_col:
         st.subheader("Lessons & follow-up")
         with st.container(border=True):
-            st.caption("ILLUSTRATIVE LESSONS" if demo else "EXPORTED COGNEE LESSONS")
+            st.caption("ILLUSTRATIVE LESSONS" if demo else "EXPORTED LESSONS / " + night.metadata.get("memory_mode", "source not supplied"))
             if tick < 31:
                 st.write("End-of-night lessons appear when the replay finishes.")
             elif night.lessons:
@@ -192,6 +208,9 @@ with decisions:
     actions = st.multiselect("Show decisions",list(COLORS),default=list(COLORS),key="actions")
     search = st.text_input("Find a traveler, rule, or reason",key="search")
     rows = [{"Time":clock_label(t.tick),"Tick":t.tick,"Trip":t.trip_id,"Fare":t.price,"Decision":t.decision.action,"Reason":t.decision.reason,"Rules":", ".join(t.decision.rules_used)} for t in visible if t.decision.action in actions]
+    if not demo:
+        for row in rows:
+            row.pop("Time")
     rows = [r for r in rows if search.lower() in " ".join(map(str,r.values())).lower()]
     if rows:
         df = pd.DataFrame(rows)
@@ -199,6 +218,24 @@ with decisions:
         st.download_button("Export filtered decisions",df.to_csv(index=False),file_name=f"night-{night_number}-decisions.csv",mime="text/csv")
     else:
         st.info("No decisions match these filters.")
+
+with execution:
+    st.subheader("Payment and booking status")
+    st.caption("A Link spend approval grants a credential. It does not mean the merchant was paid or a flight was booked. Mock bookings remain simulated.")
+    events = [e for e in night.executions if e["Tick"] <= tick]
+    if events:
+        st.dataframe(pd.DataFrame(events),hide_index=True,width="stretch",column_config={"Fare":st.column_config.NumberColumn(format="$%.2f")})
+    else:
+        st.info("No payment execution records at this point. Demo fixtures never request approval or make a purchase.")
+    if tick == 31:
+        if night.bookings:
+            st.markdown("#### Booking records")
+            st.dataframe(pd.DataFrame(night.bookings),hide_index=True,width="stretch",column_config={"Fare":st.column_config.NumberColumn(format="$%.2f")})
+        if "simulated_replacement_savings" in night.metrics:
+            st.metric("Reported simulated replacement savings",f"${night.metrics['simulated_replacement_savings']:,.2f}")
+            st.caption("Runner metric after simulated replacements/refunds. This is separate from the selected-fare comparison in Overview.")
+    else:
+        st.caption("Final booking snapshots and replacement metrics appear after the replay finishes.")
 
 with workspace:
     st.subheader("Source workspace")
