@@ -10,40 +10,16 @@ import pandas as pd
 import streamlit as st
 
 from ui_data import clock_label, comparison, digest, load_nights, purchases, statuses
+from ui_theme import COLORS, CSS, hero, ticket
 
 ROOT = Path(__file__).resolve().parent
 DEMO = ROOT / "demo" / "fixtures"
 OUTPUT = Path(os.environ.get("REDEYE_OUTPUT_DIR", str(ROOT / "output")))
-COLORS = {"BUY": "#2448A6", "WAIT": "#98A0AC", "ESCALATE": "#A65A24"}
-
-st.set_page_config(page_title="Red-Eye / Travel overview", page_icon="R", layout="wide")
-st.markdown("""<style>
-.block-container {max-width:1420px;padding:2.4rem 3rem 3rem}
-h1 {font-size:2rem!important;letter-spacing:-.035em;font-weight:600!important;padding-bottom:.3rem!important}
-h2 {font-size:1.35rem!important;font-weight:600!important;letter-spacing:-.025em}
-h3 {font-size:1.15rem!important;font-weight:600!important;letter-spacing:-.02em}
-h4 {font-size:.95rem!important;font-weight:600!important}
-p, label {font-size:.88rem!important;line-height:1.55}
-[data-testid="stCaptionContainer"] p {font-size:.76rem!important;color:#626975;line-height:1.5}
-[data-testid="stCaptionContainer"] {opacity:1!important;color:#626975!important}
-[data-testid="stMetricValue"] {font-size:2rem;font-variant-numeric:tabular-nums;font-weight:500;letter-spacing:-.035em}
-[data-testid="stMetricValue"] p {font-size:2rem!important;line-height:1.15!important}
-[data-testid="stMetricLabel"] {color:#626975}
-[data-testid="stSidebar"] {border-right:1px solid #E2E5E9;background:#F8F9FA;min-width:230px;max-width:260px}
-[data-testid="stSidebar"] h2 {font-size:1.3rem!important;letter-spacing:.03em}
-[data-testid="stVerticalBlockBorderWrapper"] {border-radius:5px!important;border-color:#DFE3E8!important;box-shadow:none!important}
-[data-baseweb="tab-list"] {gap:1.8rem;border-bottom:1px solid #DFE3E8}
-[data-baseweb="tab"] {padding-left:0;padding-right:0}
-[data-baseweb="select"] > div, button {border-radius:4px!important}
-[data-testid="stAlert"] {border-radius:4px;padding:.45rem .65rem}
-.eyebrow {color:#626975;font-size:.68rem;letter-spacing:.1em;font-weight:600;margin-bottom:.45rem}
-.lede {color:#626975;font-size:.88rem;max-width:820px;margin-bottom:.4rem}
-@media(max-width:850px){.block-container{padding:2rem 1rem}h1{font-size:1.7rem!important}}
-</style>""", unsafe_allow_html=True)
+st.set_page_config(page_title="Red-Eye / Travel overview", page_icon="✈", layout="wide")
+st.markdown(CSS, unsafe_allow_html=True)
 
 with st.sidebar:
-    st.markdown("## RED–EYE")
-    st.caption("Northstar Labs")
+    st.markdown('<div class="brand"><span class="brand-mark">✈</span> red–eye</div><div class="brand-sub">The overnight travel desk</div>', unsafe_allow_html=True)
     st.divider()
     source = st.radio("Data source", ["Demo fixtures", "Runner output"], key="source")
     demo = source == "Demo fixtures"
@@ -61,9 +37,7 @@ with st.sidebar:
     st.divider()
     st.caption("Agents After Dark / November 2026")
 
-st.markdown('<div class="eyebrow">TRAVEL OPERATIONS</div>', unsafe_allow_html=True)
-st.title("Travel overview")
-st.markdown('<div class="lede">Overnight fare decisions, policy exceptions, and the morning handoff.</div>', unsafe_allow_html=True)
+st.markdown(hero(), unsafe_allow_html=True)
 
 if not nights:
     st.info("No night results yet. Choose Demo fixtures to explore the app, or refresh after the runner exports a night.")
@@ -92,11 +66,12 @@ else:
 for warning in night.warnings:
     st.warning(warning)
 
-stats = st.columns(4)
-stats[0].metric("Trips in view", len(set(trip_map) | {t.trip_id for t in visible}))
-stats[1].metric("Purchase decisions", len(buys))
-stats[2].metric("Needs human review", len(needs_review))
-stats[3].metric("Selected fare total", f"${sum(t.price for t in buys.values()):,.0f}")
+with st.container(key="summary_metrics"):
+    stats = st.columns(4)
+    stats[0].metric("Trips in view", len(set(trip_map) | {t.trip_id for t in visible}))
+    stats[1].metric("Purchase decisions", len(buys))
+    stats[2].metric("Needs human review", len(needs_review))
+    stats[3].metric("Selected fare total", f"${sum(t.price for t in buys.values()):,.0f}")
 
 overview, decisions, execution, workspace = st.tabs(["Overview", "Decisions", "Payments & bookings", "Workspace & policy"])
 
@@ -105,21 +80,9 @@ with overview:
     if not trip_map:
         st.info("Trip details have not been exported. The chart and log still work from trace IDs; no sample trip details are substituted.")
     for start in range(0, len(night.trips), 3):
-        for col, trip in zip(st.columns(3), night.trips[start:start + 3]):
-            with col, st.container(border=True):
-                status = latest.get(trip.id)
-                st.caption(f"{trip.traveler} / {trip.trip_type.replace('_', ' ').title()}")
-                st.markdown(f"### {trip.origin} → {trip.dest}")
-                st.write("Available: " + ", ".join(trip.dates))
-                if trip.banned_dates:
-                    st.caption("Unavailable: " + ", ".join(trip.banned_dates))
-                st.caption(f"Economy fare cap ${trip.cap:,.0f}")
-                if status:
-                    label = {"BUY":"Purchase selected", "WAIT":"Watching fares", "ESCALATE":"Needs human review"}[status.decision.action]
-                    st.markdown(f"**{label} · ${status.price:,.0f}**")
-                    st.caption(status.decision.reason)
-                else:
-                    st.caption("No decision at this point in the replay.")
+        for index, (col, trip) in enumerate(zip(st.columns(3), night.trips[start:start + 3]), start=start):
+            with col:
+                st.markdown(ticket(trip, latest.get(trip.id), index), unsafe_allow_html=True)
 
     chart_col, lesson_col = st.columns([2, 1], gap="large")
     with chart_col:
@@ -143,13 +106,13 @@ with overview:
                     market = curve or market
             if rows:
                 x = alt.X("tick:Q", title="15-minute tick · 22:00 to 05:45" if demo else "Observation tick", scale=alt.Scale(domain=[0,31]), axis=alt.Axis(values=[0,4,8,12,16,20,24,28,31]))
-                line = alt.Chart(pd.DataFrame(market)).mark_line(color="#6D7A94",strokeWidth=2).encode(x=x,y=alt.Y("price:Q",title="Fare (USD)",scale=alt.Scale(zero=False)))
+                line = alt.Chart(pd.DataFrame(market)).mark_line(color="#1675E6",strokeWidth=3).encode(x=x,y=alt.Y("price:Q",title="Fare (USD)",scale=alt.Scale(zero=False)))
                 marks = alt.Chart(pd.DataFrame(rows)).mark_point(filled=True,size=85).encode(x=x,y="price:Q",color=alt.Color("action:N",title="Decision",scale=alt.Scale(domain=list(COLORS),range=list(COLORS.values()))),shape=alt.Shape("action:N",scale=alt.Scale(domain=list(COLORS),range=["triangle-up","circle","diamond"]),legend=None),tooltip=["time:N","action:N",alt.Tooltip("price:Q",format="$,.2f"),"reason:N"])
                 chart = line + marks
                 if selected in trip_map:
-                    cap = alt.Chart(pd.DataFrame([{"cap":trip_map[selected].cap}])).mark_rule(color="#A65A24",strokeDash=[4,4],opacity=.65).encode(y="cap:Q",tooltip=[alt.Tooltip("cap:Q",title="Policy cap",format="$,.0f")])
+                    cap = alt.Chart(pd.DataFrame([{"cap":trip_map[selected].cap}])).mark_rule(color="#C64238",strokeDash=[4,4],opacity=.65).encode(y="cap:Q",tooltip=[alt.Tooltip("cap:Q",title="Policy cap",format="$,.0f")])
                     chart += cap
-                st.altair_chart(chart.properties(height=310).configure_view(strokeWidth=0),width="stretch")
+                st.altair_chart(chart.properties(height=310, background="#F5F8FC").configure_view(strokeWidth=0).configure_axis(gridColor="#E0E9F2", labelColor="#526984", titleColor="#36516B"),width="stretch")
                 st.caption("Dashed line = policy cap. Hover over a marker for the reason. Market observations may continue after a purchase decision." if demo else ("Line = lowest eligible observed fare per tick. Markers = decisions; rejected offers appear below." if eligible else "Dashed line = policy cap. Chart shows exported decisions; unobserved fares are not invented."))
                 if tick == 31:
                     graded = [t for t in traces if t.decision.action == "BUY" and t.hindsight_min is not None]
@@ -163,7 +126,7 @@ with overview:
                     st.dataframe(pd.DataFrame(rejected)[["tick","date","price","rules"]],hide_index=True,width="stretch")
     with lesson_col:
         st.subheader("Lessons & follow-up")
-        with st.container(border=True):
+        with st.container(key="lessons"):
             st.caption("ILLUSTRATIVE LESSONS" if demo else "EXPORTED LESSONS / " + night.metadata.get("memory_mode", "source not supplied"))
             if tick < 31:
                 st.write("End-of-night lessons appear when the replay finishes.")
