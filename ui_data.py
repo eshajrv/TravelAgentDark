@@ -24,6 +24,7 @@ class Night:
     executions: list[dict] = field(default_factory=list)
     bookings: list[dict] = field(default_factory=list)
     metrics: dict = field(default_factory=dict)
+    team_budget: dict[str, float] | None = None
 
 
 def money(value: object) -> float:
@@ -74,6 +75,12 @@ def read_night(path: Path, number: int, *, demo: bool = False) -> Night:
         raw = json.loads(path.read_text())
         if isinstance(raw, dict):
             result.metadata = {key: raw[key] for key in ("run_id", "status", "mode", "payment_backend", "memory_mode") if isinstance(raw.get(key), str)}
+            if "team_budget" in raw:
+                try:
+                    budget = raw["team_budget"]
+                    result.team_budget = {key: money(budget[key]) for key in ("budget", "booked")}
+                except (ValueError, TypeError, KeyError):
+                    result.warnings.append("Omitted invalid team budget summary.")
             # Copy only display fields. Never retain card_file, raw CLI output,
             # credentials, or unknown payment fields from execution records.
             for item in raw.get("observations", []) if isinstance(raw.get("observations"), list) else []:
@@ -229,8 +236,18 @@ def clock_label(tick: int) -> str:
     return f"{minutes // 60:02d}:{minutes % 60:02d}"
 
 
+def team_budget_summary(night: Night, tick: int = 31) -> str | None:
+    # This is a night-level snapshot, not a per-tick ledger. Never infer it
+    # from BUY decisions or expose the final total during an earlier replay.
+    if tick < 31 or night.team_budget is None:
+        return None
+    return f"Team budget: ${night.team_budget['booked']:,.2f} of ${night.team_budget['budget']:,.2f} used"
+
+
 def digest(night: Night, tick: int = 31) -> str:
     lines = [f"Red-Eye — Night {night.number}", "Demo fixtures; simulated purchases." if night.demo else "Runner output; BUY records are decisions, not booking confirmations.", ""]
+    if summary := team_budget_summary(night, tick):
+        lines.extend([summary, ""])
     for trip_id, trace in statuses(night, tick).items():
         lines.append(f"{trip_id}: {trace.decision.action} at ${trace.price:,.2f}. {trace.decision.reason}")
     if not night.traces:

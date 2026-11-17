@@ -1,3 +1,4 @@
+import json
 import os
 import tempfile
 import unittest
@@ -10,6 +11,16 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class DashboardTests(unittest.TestCase):
+    def test_exported_team_budget_in_morning_brief(self):
+        with tempfile.TemporaryDirectory() as folder, patch.dict(os.environ, {"REDEYE_OUTPUT_DIR": folder}):
+            (Path(folder) / "night_1.json").write_text(json.dumps({"traces": [], "team_budget": {"budget": 1500, "booked": 456.75}}))
+            at = AppTest.from_file(str(ROOT / "app.py"), default_timeout=20).run()
+            at.radio(key="source").set_value("Runner output").run()
+            self.assertFalse(at.exception)
+            self.assertTrue(any("Team budget: $456.75 of $1,500.00 used" in x.value for x in at.markdown))
+            at.slider(key="tick").set_value(30).run()
+            self.assertFalse(any("Team budget:" in x.value for x in at.markdown))
+
     def test_demo_navigation_replay_and_filters(self):
         at = AppTest.from_file(str(ROOT / "app.py"), default_timeout=20).run()
         self.assertFalse(at.exception)
