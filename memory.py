@@ -110,13 +110,15 @@ def _workspace() -> dict:
 
 
 def _workspace_text(ws: dict) -> str:
-    """Slack + email as readable lines, oldest first."""
+    """Slack + email as readable lines with timestamps and source evidence IDs."""
     lines = []
-    for m in ws.get("slack", []):
-        lines.append(f"[Slack {m.get('channel', '')} {m.get('ts', '')}] {m['user']}: {m['text']}")
-    for e in ws.get("email", []):
+    for m in ws.get("slack_messages", ws.get("slack", [])):
+        lines.append(f"[Slack {m.get('id', '')} {m.get('channel', '')} "
+                     f"{m.get('timestamp', m.get('ts', ''))}] "
+                     f"{m.get('sender', m.get('user', ''))}: {m['text']}")
+    for e in ws.get("emails", ws.get("email", [])):
         lines.append(
-            f"[Email {e.get('date', '')}] From {e.get('from', '')} to {e.get('to', '')}, "
+            f"[Email {e.get('id', '')} {e.get('timestamp', e.get('date', ''))}] From {e.get('from', '')} to {e.get('to', '')}, "
             f"subject \"{e.get('subject', '')}\": {e.get('body', '')}"
         )
     return "\n".join(lines)
