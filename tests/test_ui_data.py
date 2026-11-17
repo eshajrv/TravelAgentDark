@@ -5,12 +5,34 @@ from dataclasses import asdict
 from pathlib import Path
 
 from models import Decision, Trace
-from ui_data import Night, comparison, load_nights, purchases, read_night
+from ui_data import Night, comparison, digest, load_nights, purchases, read_night
 
 ROOT = Path(__file__).resolve().parents[1]
 
 
 class ReaderTests(unittest.TestCase):
+    def test_budget_digest_uses_exported_bookings_and_waits_for_replay_end(self):
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder) / "night_1.json"
+            payload = {"traces": [asdict(Trace(1, 0, "a", 100, Decision("BUY", "selected")))],
+                       "team_budget": {"budget": 1500, "booked": 456.75}}
+            path.write_text(json.dumps(payload))
+            night = read_night(path, 1)
+            self.assertFalse(night.warnings)
+            self.assertIn("Team budget: $456.75 of $1,500.00 used", digest(night))
+            self.assertNotIn("Team budget:", digest(night, 30))
+            for value in (None, {}, {"budget": 1000}, {"budget": True, "booked": 0},
+                          {"budget": 1000, "booked": -1}, {"budget": 1000, "booked": float("nan")}):
+                with self.subTest(value=value):
+                    path.write_text(json.dumps({**payload, "team_budget": value}))
+                    invalid = read_night(path, 1)
+                    self.assertIsNone(invalid.team_budget)
+                    self.assertTrue(invalid.warnings)
+                    self.assertEqual(len(invalid.traces), 1)
+                    self.assertNotIn("Team budget:", digest(invalid))
+            path.write_text(json.dumps({"traces": []}))
+            self.assertNotIn("Team budget:", digest(read_night(path, 1)))
+
     def test_fixture_story_and_model_contract(self):
         nights = load_nights(ROOT / "demo" / "fixtures", demo=True)
         self.assertFalse(nights[1].warnings + nights[2].warnings)

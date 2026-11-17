@@ -27,6 +27,7 @@ Switch to **Runner output** and refresh to read `output/night_N.json`. The app n
 - Ticks are integers 0–31. Demo fixtures display 22:00–05:45 in 15-minute steps; runner output uses tick indices without inventing a wall-clock time. Invalid records produce a visible warning. Money is in USD.
 - Versioned exports also supply observations, execution_events, bookings, metrics, and run/memory/payment status. The UI plots eligible observed lows and shows rejected offers separately. It copies only approved display fields from payment records; credential paths and raw CLI output are never retained.
 - The Payments & bookings tab shows exported execution states and simulated replacement savings. Link approval is a credential state, not a completed purchase. Offline memory is labeled explicitly.
+- An optional `team_budget: {budget, booked}` night summary supplies `Team budget: $booked of $budget used` in the on-screen and downloaded morning brief. Both amounts are USD. The final snapshot appears only at tick 31; missing values are not inferred from BUY decisions.
 - Comparisons match trips with BUY decisions in both nights and count the first BUY once per trip. They are labeled selected-fare differences, not realized savings. Payment/booking outcomes must be confirmed independently by the runner.
 
 ## Memory integration

@@ -9,7 +9,7 @@ import altair as alt
 import pandas as pd
 import streamlit as st
 
-from ui_data import clock_label, comparison, digest, load_nights, purchases, statuses
+from ui_data import clock_label, comparison, digest, load_nights, purchases, statuses, team_budget_summary
 from ui_theme import COLORS, CSS, hero, ticket
 
 ROOT = Path(__file__).resolve().parent
@@ -158,6 +158,8 @@ with overview:
             st.info("Both night_1.json and night_2.json are needed for a comparison.")
     with digest_col:
         st.subheader("Morning brief" if tick == 31 else "Replay brief")
+        if summary := team_budget_summary(night, tick):
+            st.write(summary)
         for key, t in latest.items():
             name = trip_map[key].traveler if key in trip_map else key
             st.markdown(f"**{name} · {t.decision.action} · ${t.price:,.0f}**")
