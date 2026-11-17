@@ -74,6 +74,19 @@ class ReaderTests(unittest.TestCase):
             self.assertNotIn("PRIVATE-",repr(night))
             self.assertEqual(night.metrics["simulated_replacement_savings"],12)
 
+    def test_eshas_shared_lessons_are_scoped_to_their_night(self):
+        with tempfile.TemporaryDirectory() as folder:
+            p=Path(folder)
+            for n in (1,2):
+                (p / f"night_{n}.json").write_text("[]")
+            (p / "lessons.json").write_text(json.dumps([
+                {"night":1,"route":"SFO-JFK","trip_id":"esha_sfo_jfk","lesson":"First night lesson"},
+                {"night":2,"route":"SFO-JFK","trip_id":"esha_sfo_jfk","lesson":"Second night lesson"}]))
+            nights=load_nights(p)
+            self.assertEqual(nights[1].lessons,["First night lesson"])
+            self.assertEqual(nights[2].lessons,["Second night lesson"])
+            self.assertFalse(nights[1].warnings+nights[2].warnings)
+
 
 if __name__ == "__main__":
     unittest.main()

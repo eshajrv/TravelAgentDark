@@ -162,6 +162,16 @@ def read_night(path: Path, number: int, *, demo: bool = False) -> Night:
 def load_nights(folder: Path, *, demo: bool = False) -> dict[int, Night]:
     result = {}
     trips, warnings = read_trips(folder / "trips.json")
+    shared_lessons = []
+    shared_path = folder / "lessons.json"
+    if shared_path.exists():
+        try:
+            shared_lessons = json.loads(shared_path.read_text())
+            if not isinstance(shared_lessons, list):
+                raise ValueError("lessons.json must be an array of night/lesson records")
+        except (OSError, ValueError, TypeError) as error:
+            warnings.append(f"Could not read lessons.json: {error}")
+            shared_lessons = []
     for path in sorted(folder.glob("night_*.json")):
         match = re.fullmatch(r"night_([1-9]\d*)\.json", path.name)
         if not match:
@@ -171,6 +181,13 @@ def load_nights(folder: Path, *, demo: bool = False) -> dict[int, Night]:
         if not night.trips:
             night.trips = trips
         night.warnings.extend(warnings)
+        if not night.lessons:
+            for item in shared_lessons:
+                if not isinstance(item, dict) or not isinstance(item.get("night"), int) or not isinstance(item.get("lesson"), str):
+                    night.warnings.append("Omitted invalid shared lesson record.")
+                    continue
+                if item["night"] == n:
+                    night.lessons.append(item["lesson"])
         lesson_path = folder / f"lessons_{n}.json"
         if not night.lessons and lesson_path.exists():
             try:

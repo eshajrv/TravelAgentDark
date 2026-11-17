@@ -98,7 +98,7 @@ stats[1].metric("Purchase decisions", len(buys))
 stats[2].metric("Needs human review", len(needs_review))
 stats[3].metric("Selected fare total", f"${sum(t.price for t in buys.values()):,.0f}")
 
-overview, decisions, execution, workspace, pitch = st.tabs(["Overview", "Decisions", "Payments & bookings", "Workspace & policy", "Demo & pitch"])
+overview, decisions, execution, workspace = st.tabs(["Overview", "Decisions", "Payments & bookings", "Workspace & policy"])
 
 with overview:
     st.subheader("Itineraries")
@@ -256,15 +256,3 @@ with workspace:
                     st.write(item["body"])
     with policy_col:
         st.markdown((ROOT / "data" / "policy.md").read_text())
-
-with pitch:
-    st.subheader("A three-minute product story")
-    st.write("Start with the scattered travel requests. Show Esha’s early decision, Rohan’s unavailable date, and Priya’s escalation. Finish with the comparison and the morning brief.")
-    for filename, label in [("pitch.html","Download four-slide offline deck"),("DEMO_SCRIPT.md","Download three-minute script & judge Q&A")]:
-        path = ROOT / "demo" / filename
-        if path.exists():
-            st.download_button(label,path.read_bytes(),file_name=filename,mime="text/html" if filename.endswith("html") else "text/markdown")
-    video = ROOT / "demo" / "backup-demo.mp4"
-    if video.exists():
-        st.video(str(video))
-    st.caption("The fixtures demonstrate the product story. Verify the runner’s actual results before claiming live extraction, learning, payment, or booking success.")
