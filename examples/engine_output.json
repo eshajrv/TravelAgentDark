@@ -1,0 +1,341 @@
+{
+  "schema_version": 1,
+  "run_id": "smoke",
+  "night": 2,
+  "status": "completed",
+  "mode": "simulated_fares_and_bookings",
+  "payment_backend": "mock",
+  "memory_mode": "offline_demo_fixture",
+  "trips": [
+    {
+      "id": "esha_sfo_jfk",
+      "traveler": "Esha",
+      "origin": "SFO",
+      "dest": "JFK",
+      "dates": [
+        "2026-12-06",
+        "2026-12-07"
+      ],
+      "banned_dates": [],
+      "cap": 600,
+      "trip_type": "tier_a_conference"
+    },
+    {
+      "id": "rohan_sfo_ord",
+      "traveler": "Rohan",
+      "origin": "SFO",
+      "dest": "ORD",
+      "dates": [
+        "2026-12-02",
+        "2026-12-04"
+      ],
+      "banned_dates": [
+        "2026-12-03"
+      ],
+      "cap": 300,
+      "trip_type": "customer"
+    },
+    {
+      "id": "priya_bos_sfo",
+      "traveler": "Priya",
+      "origin": "BOS",
+      "dest": "SFO",
+      "dates": [
+        "2026-12-09",
+        "2026-12-10"
+      ],
+      "banned_dates": [],
+      "cap": 300,
+      "trip_type": "other"
+    }
+  ],
+  "traces": [
+    {
+      "night": 2,
+      "tick": 0,
+      "trip_id": "esha_sfo_jfk",
+      "price": 420.0,
+      "decision": {
+        "action": "WAIT",
+        "reason": "Keep the cheaper existing booking",
+        "rules_used": [
+          "replacement_savings"
+        ]
+      },
+      "hindsight_min": null,
+      "regret": null
+    },
+    {
+      "night": 2,
+      "tick": 0,
+      "trip_id": "rohan_sfo_ord",
+      "price": 262.0,
+      "decision": {
+        "action": "BUY",
+        "reason": "Eligible fare meets recalled target",
+        "rules_used": [
+          "trip_cap",
+          "recalled_timing_lesson"
+        ]
+      },
+      "hindsight_min": 260.0,
+      "regret": 2.0
+    }
+  ],
+  "lessons": [
+    "Night 2 observed an eligible SFO-ORD low of $260.00 after an earlier buy. Trial target $273.00; one simulated night is not a reliable trend."
+  ],
+  "observations": [
+    {
+      "offer": {
+        "id": "esha_sfo_jfk:n2:t0:2026-12-06",
+        "trip_id": "esha_sfo_jfk",
+        "night": 2,
+        "tick": 0,
+        "price": 420.0,
+        "travel_date": "2026-12-06",
+        "origin": "SFO",
+        "dest": "JFK",
+        "itinerary": [
+          "SFO",
+          "JFK"
+        ],
+        "merchant": "Demo Air",
+        "quoted_at": "2026-11-18T04:00:00+00:00",
+        "expires_at": "2026-11-18T04:15:00+00:00",
+        "free_cancel_until": "2026-11-20T04:00:00+00:00",
+        "cabin": "economy",
+        "currency": "usd",
+        "skip_segment": false
+      },
+      "eligible": true,
+      "rejection_rules": []
+    },
+    {
+      "offer": {
+        "id": "esha_sfo_jfk:n2:t0:2026-12-07",
+        "trip_id": "esha_sfo_jfk",
+        "night": 2,
+        "tick": 0,
+        "price": 421.0,
+        "travel_date": "2026-12-07",
+        "origin": "SFO",
+        "dest": "JFK",
+        "itinerary": [
+          "SFO",
+          "JFK"
+        ],
+        "merchant": "Demo Air",
+        "quoted_at": "2026-11-18T04:00:00+00:00",
+        "expires_at": "2026-11-18T04:15:00+00:00",
+        "free_cancel_until": "2026-11-20T04:00:00+00:00",
+        "cabin": "economy",
+        "currency": "usd",
+        "skip_segment": false
+      },
+      "eligible": true,
+      "rejection_rules": []
+    }
+  ],
+  "execution_events": [
+    {
+      "id": "b16d79fc60cd8fd6751eb781e4ff7505e1518d3b35f167057000ecba3f3e4bac",
+      "offer": {
+        "id": "rohan_sfo_ord:n2:t0:2026-12-02",
+        "trip_id": "rohan_sfo_ord",
+        "night": 2,
+        "tick": 0,
+        "price": 262.0,
+        "travel_date": "2026-12-02",
+        "origin": "SFO",
+        "dest": "ORD",
+        "itinerary": [
+          "SFO",
+          "ORD"
+        ],
+        "merchant": "Demo Air",
+        "quoted_at": "2026-11-18T04:00:00+00:00",
+        "expires_at": "2026-11-18T04:15:00+00:00",
+        "free_cancel_until": "2026-11-20T04:00:00+00:00",
+        "cabin": "economy",
+        "currency": "usd",
+        "skip_segment": false
+      },
+      "trip": {
+        "id": "rohan_sfo_ord",
+        "traveler": "Rohan",
+        "origin": "SFO",
+        "dest": "ORD",
+        "dates": [
+          "2026-12-02",
+          "2026-12-04"
+        ],
+        "banned_dates": [
+          "2026-12-03"
+        ],
+        "cap": 300,
+        "trip_type": "customer"
+      },
+      "backend": "mock",
+      "status": "booked",
+      "checkout": {
+        "id": "mock_b16d79fc60cd8fd6751eb781e4ff7505e1518d3b35f167057000ecba3f3e4bac",
+        "url": null,
+        "status": "paid",
+        "amount_cents": 26200,
+        "currency": "usd",
+        "backend": "mock",
+        "operation_id": "b16d79fc60cd8fd6751eb781e4ff7505e1518d3b35f167057000ecba3f3e4bac"
+      },
+      "booking_id": "booking_b16d79fc60cd8fd6751eb781",
+      "created_at": "2026-11-17T02:37:56.159081+00:00",
+      "previous_booking_id": "booking_2f056d2a96f54fcd828b8ba9",
+      "booking": {
+        "id": "booking_b16d79fc60cd8fd6751eb781",
+        "trip_id": "rohan_sfo_ord",
+        "offer_id": "rohan_sfo_ord:n2:t0:2026-12-02",
+        "night": 2,
+        "price": 262.0,
+        "travel_date": "2026-12-02",
+        "free_cancel_until": "2026-11-20T04:00:00+00:00",
+        "status": "simulated_confirmed",
+        "payment_backend": "mock",
+        "payment_id": "mock_b16d79fc60cd8fd6751eb781e4ff7505e1518d3b35f167057000ecba3f3e4bac",
+        "replaced_booking_id": "booking_2f056d2a96f54fcd828b8ba9",
+        "simulated_refund": 265.0,
+        "replacement_savings": 3.0
+      },
+      "trace_index": 1
+    },
+    {
+      "id": "8fdf7595a02d3dfb3c3ba434ea6a58af980e7d35c718860377c4bcab60312e37",
+      "offer": {
+        "id": "esha_sfo_jfk:n2:t24:2026-12-06",
+        "trip_id": "esha_sfo_jfk",
+        "night": 2,
+        "tick": 24,
+        "price": 291.0,
+        "travel_date": "2026-12-06",
+        "origin": "SFO",
+        "dest": "JFK",
+        "itinerary": [
+          "SFO",
+          "JFK"
+        ],
+        "merchant": "Demo Air",
+        "quoted_at": "2026-11-18T10:00:00+00:00",
+        "expires_at": "2026-11-18T10:15:00+00:00",
+        "free_cancel_until": "2026-11-20T04:00:00+00:00",
+        "cabin": "economy",
+        "currency": "usd",
+        "skip_segment": false
+      },
+      "trip": {
+        "id": "esha_sfo_jfk",
+        "traveler": "Esha",
+        "origin": "SFO",
+        "dest": "JFK",
+        "dates": [
+          "2026-12-06",
+          "2026-12-07"
+        ],
+        "banned_dates": [],
+        "cap": 600,
+        "trip_type": "tier_a_conference"
+      },
+      "backend": "mock",
+      "status": "booked",
+      "checkout": {
+        "id": "mock_8fdf7595a02d3dfb3c3ba434ea6a58af980e7d35c718860377c4bcab60312e37",
+        "url": null,
+        "status": "paid",
+        "amount_cents": 29100,
+        "currency": "usd",
+        "backend": "mock",
+        "operation_id": "8fdf7595a02d3dfb3c3ba434ea6a58af980e7d35c718860377c4bcab60312e37"
+      },
+      "booking_id": "booking_8fdf7595a02d3dfb3c3ba434",
+      "created_at": "2026-11-17T02:37:56.252223+00:00",
+      "previous_booking_id": "booking_02b87a55d7b176fbde79d4ab",
+      "booking": {
+        "id": "booking_8fdf7595a02d3dfb3c3ba434",
+        "trip_id": "esha_sfo_jfk",
+        "offer_id": "esha_sfo_jfk:n2:t24:2026-12-06",
+        "night": 2,
+        "price": 291.0,
+        "travel_date": "2026-12-06",
+        "free_cancel_until": "2026-11-20T04:00:00+00:00",
+        "status": "simulated_confirmed",
+        "payment_backend": "mock",
+        "payment_id": "mock_8fdf7595a02d3dfb3c3ba434ea6a58af980e7d35c718860377c4bcab60312e37",
+        "replaced_booking_id": "booking_02b87a55d7b176fbde79d4ab",
+        "simulated_refund": 412.0,
+        "replacement_savings": 121.0
+      },
+      "trace_index": 72
+    }
+  ],
+  "bookings": [
+    {
+      "id": "booking_8fdf7595a02d3dfb3c3ba434",
+      "trip_id": "esha_sfo_jfk",
+      "offer_id": "esha_sfo_jfk:n2:t24:2026-12-06",
+      "night": 2,
+      "price": 291.0,
+      "travel_date": "2026-12-06",
+      "free_cancel_until": "2026-11-20T04:00:00+00:00",
+      "status": "simulated_confirmed",
+      "payment_backend": "mock",
+      "payment_id": "mock_8fdf7595a02d3dfb3c3ba434ea6a58af980e7d35c718860377c4bcab60312e37",
+      "replaced_booking_id": "booking_02b87a55d7b176fbde79d4ab",
+      "simulated_refund": 412.0,
+      "replacement_savings": 121.0
+    },
+    {
+      "id": "booking_b16d79fc60cd8fd6751eb781",
+      "trip_id": "rohan_sfo_ord",
+      "offer_id": "rohan_sfo_ord:n2:t0:2026-12-02",
+      "night": 2,
+      "price": 262.0,
+      "travel_date": "2026-12-02",
+      "free_cancel_until": "2026-11-20T04:00:00+00:00",
+      "status": "simulated_confirmed",
+      "payment_backend": "mock",
+      "payment_id": "mock_b16d79fc60cd8fd6751eb781e4ff7505e1518d3b35f167057000ecba3f3e4bac",
+      "replaced_booking_id": "booking_2f056d2a96f54fcd828b8ba9",
+      "simulated_refund": 265.0,
+      "replacement_savings": 3.0
+    }
+  ],
+  "escalations": [
+    {
+      "trip_id": "priya_bos_sfo",
+      "reason": "Fare exceeds trip cap"
+    }
+  ],
+  "errors": [],
+  "recalled_context": [
+    {
+      "trace_index": 0,
+      "text": "{\"source\": \"offline_demo_fixture\", \"rules\": [\"trip_cap\", \"allowed_dates\", \"economy_only\"], \"timing_rule\": {\"target_price\": 301.35, \"lesson\": \"Night 1 observed an eligible SFO-JFK low of $287.00 after an earlier buy. Trial target $301.35; one simulated night is not a reliable trend.\", \"source_night\": 1}}"
+    },
+    {
+      "trace_index": 1,
+      "text": "{\"source\": \"offline_demo_fixture\", \"rules\": [\"trip_cap\", \"allowed_dates\", \"economy_only\"], \"timing_rule\": {\"target_price\": 273.0, \"lesson\": \"Night 1 observed an eligible SFO-ORD low of $260.00 after an earlier buy. Trial target $273.00; one simulated night is not a reliable trend.\", \"source_night\": 1}}"
+    }
+  ],
+  "metrics": {
+    "eligible_hindsight_min": {
+      "esha_sfo_jfk": 291.0,
+      "rohan_sfo_ord": 260.0
+    },
+    "first_eligible_price": {
+      "esha_sfo_jfk": 420.0,
+      "rohan_sfo_ord": 262.0
+    },
+    "simulated_replacement_savings": 124.0,
+    "confirmed_real_flight_savings": 0
+  },
+  "next_tick": 32,
+  "example_only": true
+}
