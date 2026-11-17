@@ -1,0 +1,43 @@
+[
+  {
+    "id": "esha_sfo_jfk",
+    "traveler": "Esha",
+    "origin": "SFO",
+    "dest": "JFK",
+    "dates": [
+      "2026-12-06",
+      "2026-12-07"
+    ],
+    "banned_dates": [],
+    "cap": 600,
+    "trip_type": "tier_a_conference"
+  },
+  {
+    "id": "rohan_sfo_ord",
+    "traveler": "Rohan",
+    "origin": "SFO",
+    "dest": "ORD",
+    "dates": [
+      "2026-12-02",
+      "2026-12-04"
+    ],
+    "banned_dates": [
+      "2026-12-03"
+    ],
+    "cap": 300,
+    "trip_type": "customer"
+  },
+  {
+    "id": "priya_bos_sfo",
+    "traveler": "Priya",
+    "origin": "BOS",
+    "dest": "SFO",
+    "dates": [
+      "2026-12-09",
+      "2026-12-10"
+    ],
+    "banned_dates": [],
+    "cap": 300,
+    "trip_type": "other"
+  }
+]

@@ -1,0 +1,162 @@
+[
+  {
+    "tick": 0,
+    "price": 448,
+    "trip_id": "esha_sfo_jfk"
+  },
+  {
+    "tick": 1,
+    "price": 441,
+    "trip_id": "esha_sfo_jfk"
+  },
+  {
+    "tick": 2,
+    "price": 435,
+    "trip_id": "esha_sfo_jfk"
+  },
+  {
+    "tick": 3,
+    "price": 429,
+    "trip_id": "esha_sfo_jfk"
+  },
+  {
+    "tick": 4,
+    "price": 422,
+    "trip_id": "esha_sfo_jfk"
+  },
+  {
+    "tick": 5,
+    "price": 418,
+    "trip_id": "esha_sfo_jfk"
+  },
+  {
+    "tick": 6,
+    "price": 414,
+    "trip_id": "esha_sfo_jfk"
+  },
+  {
+    "tick": 7,
+    "price": 412,
+    "trip_id": "esha_sfo_jfk"
+  },
+  {
+    "tick": 8,
+    "price": 408,
+    "trip_id": "esha_sfo_jfk"
+  },
+  {
+    "tick": 9,
+    "price": 397,
+    "trip_id": "esha_sfo_jfk"
+  },
+  {
+    "tick": 10,
+    "price": 388,
+    "trip_id": "esha_sfo_jfk"
+  },
+  {
+    "tick": 11,
+    "price": 372,
+    "trip_id": "esha_sfo_jfk"
+  },
+  {
+    "tick": 12,
+    "price": 361,
+    "trip_id": "esha_sfo_jfk"
+  },
+  {
+    "tick": 13,
+    "price": 348,
+    "trip_id": "esha_sfo_jfk"
+  },
+  {
+    "tick": 14,
+    "price": 325,
+    "trip_id": "esha_sfo_jfk"
+  },
+  {
+    "tick": 15,
+    "price": 306,
+    "trip_id": "esha_sfo_jfk"
+  },
+  {
+    "tick": 16,
+    "price": 287,
+    "trip_id": "esha_sfo_jfk"
+  },
+  {
+    "tick": 17,
+    "price": 301,
+    "trip_id": "esha_sfo_jfk"
+  },
+  {
+    "tick": 18,
+    "price": 312,
+    "trip_id": "esha_sfo_jfk"
+  },
+  {
+    "tick": 19,
+    "price": 328,
+    "trip_id": "esha_sfo_jfk"
+  },
+  {
+    "tick": 20,
+    "price": 344,
+    "trip_id": "esha_sfo_jfk"
+  },
+  {
+    "tick": 21,
+    "price": 355,
+    "trip_id": "esha_sfo_jfk"
+  },
+  {
+    "tick": 22,
+    "price": 366,
+    "trip_id": "esha_sfo_jfk"
+  },
+  {
+    "tick": 23,
+    "price": 379,
+    "trip_id": "esha_sfo_jfk"
+  },
+  {
+    "tick": 24,
+    "price": 388,
+    "trip_id": "esha_sfo_jfk"
+  },
+  {
+    "tick": 25,
+    "price": 401,
+    "trip_id": "esha_sfo_jfk"
+  },
+  {
+    "tick": 26,
+    "price": 415,
+    "trip_id": "esha_sfo_jfk"
+  },
+  {
+    "tick": 27,
+    "price": 428,
+    "trip_id": "esha_sfo_jfk"
+  },
+  {
+    "tick": 28,
+    "price": 440,
+    "trip_id": "esha_sfo_jfk"
+  },
+  {
+    "tick": 29,
+    "price": 452,
+    "trip_id": "esha_sfo_jfk"
+  },
+  {
+    "tick": 30,
+    "price": 460,
+    "trip_id": "esha_sfo_jfk"
+  },
+  {
+    "tick": 31,
+    "price": 468,
+    "trip_id": "esha_sfo_jfk"
+  }
+]

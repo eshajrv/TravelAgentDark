@@ -1,5 +1,7 @@
 # Red-Eye Team Split: Esha, Rohan, Aman
 
+> **Current update:** Cognee stays. Stripe Link Agent Wallet replaces Allowance. Rohan owns the revised request_payment/get_payment contract; approved test credentials are not completed purchases. Existing shared dataclasses stay unchanged until coordinated in [issue #1](https://github.com/eshajrv/TravelAgentDark/issues/1). See [README.md](README.md) for the current dashboard handoff.
+
 Nov 16, 2026 · @Verma
 
 Each person owns one layer, one sponsor and one demo moment.
@@ -56,7 +58,8 @@ def end_night(night: int) -> list[str]: ...    # returns the new lessons
 # Rohan (sim / agent / payments / run_night)
 def get_fare(trip: Trip, night: int, tick: int) -> float: ...
 def decide(trip: Trip, price: float, context: str) -> Decision: ...
-def issue_card(amount: float, merchant: str, trip_id: str) -> dict: ...
+def request_payment(amount: float, merchant: str, reason: str) -> dict: ...
+def get_payment(request_id: str) -> dict: ...
 def run_night(night: int) -> list[Trace]: ...
 ```
 
@@ -95,15 +98,15 @@ Aman builds the app against a hand-written `output/night_1.json`. When the real 
 
 **Demo moment:** "here's what it learned."
 
-## Rohan: the agent and payments (Allowance)
+## Rohan: the agent and payments (Stripe Link)
 
-**Owns:** `sim/fares.py`, `agent.py`, `payments.py`, `run_night.py`, and the Allowance founder conversation.
+**Owns:** `sim/fares.py`, `agent.py`, `payments.py`, `run_night.py`, and the Link integration.
 
 **Builds:**
 
 - **Fare simulator:** prices that move through the night, a fixed seed so every run is identical, and Night 1 set up so a naive buy overpays (about $412 early, about $287 later).
 - **Decision agent:** takes the trip, the price and the Cognee context, and returns buy, wait or escalate with a reason and the rules it used.
-- **Payments:** a one-time card capped at the fare plus $5, issued only after the policy check passes. Allowance if the API works; otherwise Stripe test mode or a fake card behind the same function.
+- **Payments:** human-approved test payment credentials through Link Agent Wallet after policy checks. MockPayments is explicitly simulated. Link requests obey the project's $500 cap as well as the trip cap.
 - **Night loop:** 32 ticks; calls `recall_context` and `log_trace` from Esha's code and `end_night` at the end.
 
 **Done when:** running Night 1 and then Night 2 shows the agent buying cheaper on Night 2, refusing Rohan's Dec 3 fare, and escalating Priya's.
