@@ -1,0 +1,953 @@
+{
+  "demo": true,
+  "night": 1,
+  "traces": [
+    {
+      "night": 1,
+      "tick": 0,
+      "trip_id": "esha_sfo_jfk",
+      "price": 448,
+      "decision": {
+        "action": "WAIT",
+        "reason": "Watching for an eligible fare.",
+        "rules_used": [
+          "tier_a_cap",
+          "allowed_dates"
+        ]
+      },
+      "hindsight_min": null,
+      "regret": null
+    },
+    {
+      "night": 1,
+      "tick": 0,
+      "trip_id": "rohan_sfo_ord",
+      "price": 320,
+      "decision": {
+        "action": "WAIT",
+        "reason": "Watching for a fare on December 2 or 4 within the customer cap.",
+        "rules_used": [
+          "banned_dates",
+          "standard_cap"
+        ]
+      },
+      "hindsight_min": null,
+      "regret": null
+    },
+    {
+      "night": 1,
+      "tick": 0,
+      "trip_id": "priya_bos_sfo",
+      "price": 415,
+      "decision": {
+        "action": "ESCALATE",
+        "reason": "Offsite fare exceeds the $300 cap. Human approval required; no purchase.",
+        "rules_used": [
+          "standard_cap",
+          "cap_escalation"
+        ]
+      },
+      "hindsight_min": null,
+      "regret": null
+    },
+    {
+      "night": 1,
+      "tick": 1,
+      "trip_id": "esha_sfo_jfk",
+      "price": 441,
+      "decision": {
+        "action": "WAIT",
+        "reason": "Watching for an eligible fare.",
+        "rules_used": [
+          "tier_a_cap",
+          "allowed_dates"
+        ]
+      },
+      "hindsight_min": null,
+      "regret": null
+    },
+    {
+      "night": 1,
+      "tick": 1,
+      "trip_id": "rohan_sfo_ord",
+      "price": 319,
+      "decision": {
+        "action": "WAIT",
+        "reason": "Watching for a fare on December 2 or 4 within the customer cap.",
+        "rules_used": [
+          "banned_dates",
+          "standard_cap"
+        ]
+      },
+      "hindsight_min": null,
+      "regret": null
+    },
+    {
+      "night": 1,
+      "tick": 1,
+      "trip_id": "priya_bos_sfo",
+      "price": 412,
+      "decision": {
+        "action": "ESCALATE",
+        "reason": "Offsite fare exceeds the $300 cap. Human approval required; no purchase.",
+        "rules_used": [
+          "standard_cap",
+          "cap_escalation"
+        ]
+      },
+      "hindsight_min": null,
+      "regret": null
+    },
+    {
+      "night": 1,
+      "tick": 2,
+      "trip_id": "esha_sfo_jfk",
+      "price": 435,
+      "decision": {
+        "action": "WAIT",
+        "reason": "Watching for an eligible fare.",
+        "rules_used": [
+          "tier_a_cap",
+          "allowed_dates"
+        ]
+      },
+      "hindsight_min": null,
+      "regret": null
+    },
+    {
+      "night": 1,
+      "tick": 2,
+      "trip_id": "rohan_sfo_ord",
+      "price": 318,
+      "decision": {
+        "action": "WAIT",
+        "reason": "Watching for a fare on December 2 or 4 within the customer cap.",
+        "rules_used": [
+          "banned_dates",
+          "standard_cap"
+        ]
+      },
+      "hindsight_min": null,
+      "regret": null
+    },
+    {
+      "night": 1,
+      "tick": 2,
+      "trip_id": "priya_bos_sfo",
+      "price": 409,
+      "decision": {
+        "action": "ESCALATE",
+        "reason": "Offsite fare exceeds the $300 cap. Human approval required; no purchase.",
+        "rules_used": [
+          "standard_cap",
+          "cap_escalation"
+        ]
+      },
+      "hindsight_min": null,
+      "regret": null
+    },
+    {
+      "night": 1,
+      "tick": 3,
+      "trip_id": "esha_sfo_jfk",
+      "price": 429,
+      "decision": {
+        "action": "WAIT",
+        "reason": "Watching for an eligible fare.",
+        "rules_used": [
+          "tier_a_cap",
+          "allowed_dates"
+        ]
+      },
+      "hindsight_min": null,
+      "regret": null
+    },
+    {
+      "night": 1,
+      "tick": 3,
+      "trip_id": "rohan_sfo_ord",
+      "price": 317,
+      "decision": {
+        "action": "WAIT",
+        "reason": "Watching for a fare on December 2 or 4 within the customer cap.",
+        "rules_used": [
+          "banned_dates",
+          "standard_cap"
+        ]
+      },
+      "hindsight_min": null,
+      "regret": null
+    },
+    {
+      "night": 1,
+      "tick": 3,
+      "trip_id": "priya_bos_sfo",
+      "price": 406,
+      "decision": {
+        "action": "ESCALATE",
+        "reason": "Offsite fare exceeds the $300 cap. Human approval required; no purchase.",
+        "rules_used": [
+          "standard_cap",
+          "cap_escalation"
+        ]
+      },
+      "hindsight_min": null,
+      "regret": null
+    },
+    {
+      "night": 1,
+      "tick": 4,
+      "trip_id": "esha_sfo_jfk",
+      "price": 422,
+      "decision": {
+        "action": "WAIT",
+        "reason": "Watching for an eligible fare.",
+        "rules_used": [
+          "tier_a_cap",
+          "allowed_dates"
+        ]
+      },
+      "hindsight_min": null,
+      "regret": null
+    },
+    {
+      "night": 1,
+      "tick": 4,
+      "trip_id": "rohan_sfo_ord",
+      "price": 316,
+      "decision": {
+        "action": "WAIT",
+        "reason": "Watching for a fare on December 2 or 4 within the customer cap.",
+        "rules_used": [
+          "banned_dates",
+          "standard_cap"
+        ]
+      },
+      "hindsight_min": null,
+      "regret": null
+    },
+    {
+      "night": 1,
+      "tick": 4,
+      "trip_id": "priya_bos_sfo",
+      "price": 403,
+      "decision": {
+        "action": "ESCALATE",
+        "reason": "Offsite fare exceeds the $300 cap. Human approval required; no purchase.",
+        "rules_used": [
+          "standard_cap",
+          "cap_escalation"
+        ]
+      },
+      "hindsight_min": null,
+      "regret": null
+    },
+    {
+      "night": 1,
+      "tick": 5,
+      "trip_id": "esha_sfo_jfk",
+      "price": 418,
+      "decision": {
+        "action": "WAIT",
+        "reason": "Watching for an eligible fare.",
+        "rules_used": [
+          "tier_a_cap",
+          "allowed_dates"
+        ]
+      },
+      "hindsight_min": null,
+      "regret": null
+    },
+    {
+      "night": 1,
+      "tick": 5,
+      "trip_id": "rohan_sfo_ord",
+      "price": 315,
+      "decision": {
+        "action": "WAIT",
+        "reason": "Watching for a fare on December 2 or 4 within the customer cap.",
+        "rules_used": [
+          "banned_dates",
+          "standard_cap"
+        ]
+      },
+      "hindsight_min": null,
+      "regret": null
+    },
+    {
+      "night": 1,
+      "tick": 5,
+      "trip_id": "priya_bos_sfo",
+      "price": 400,
+      "decision": {
+        "action": "ESCALATE",
+        "reason": "Offsite fare exceeds the $300 cap. Human approval required; no purchase.",
+        "rules_used": [
+          "standard_cap",
+          "cap_escalation"
+        ]
+      },
+      "hindsight_min": null,
+      "regret": null
+    },
+    {
+      "night": 1,
+      "tick": 6,
+      "trip_id": "esha_sfo_jfk",
+      "price": 414,
+      "decision": {
+        "action": "WAIT",
+        "reason": "Watching for an eligible fare.",
+        "rules_used": [
+          "tier_a_cap",
+          "allowed_dates"
+        ]
+      },
+      "hindsight_min": null,
+      "regret": null
+    },
+    {
+      "night": 1,
+      "tick": 6,
+      "trip_id": "rohan_sfo_ord",
+      "price": 314,
+      "decision": {
+        "action": "WAIT",
+        "reason": "Watching for a fare on December 2 or 4 within the customer cap.",
+        "rules_used": [
+          "banned_dates",
+          "standard_cap"
+        ]
+      },
+      "hindsight_min": null,
+      "regret": null
+    },
+    {
+      "night": 1,
+      "tick": 6,
+      "trip_id": "priya_bos_sfo",
+      "price": 397,
+      "decision": {
+        "action": "ESCALATE",
+        "reason": "Offsite fare exceeds the $300 cap. Human approval required; no purchase.",
+        "rules_used": [
+          "standard_cap",
+          "cap_escalation"
+        ]
+      },
+      "hindsight_min": null,
+      "regret": null
+    },
+    {
+      "night": 1,
+      "tick": 7,
+      "trip_id": "esha_sfo_jfk",
+      "price": 412,
+      "decision": {
+        "action": "BUY",
+        "reason": "Within the $600 Tier A cap; purchased early.",
+        "rules_used": [
+          "tier_a_cap",
+          "allowed_dates"
+        ]
+      },
+      "hindsight_min": 287,
+      "regret": 125
+    },
+    {
+      "night": 1,
+      "tick": 7,
+      "trip_id": "rohan_sfo_ord",
+      "price": 313,
+      "decision": {
+        "action": "WAIT",
+        "reason": "Watching for a fare on December 2 or 4 within the customer cap.",
+        "rules_used": [
+          "banned_dates",
+          "standard_cap"
+        ]
+      },
+      "hindsight_min": null,
+      "regret": null
+    },
+    {
+      "night": 1,
+      "tick": 7,
+      "trip_id": "priya_bos_sfo",
+      "price": 394,
+      "decision": {
+        "action": "ESCALATE",
+        "reason": "Offsite fare exceeds the $300 cap. Human approval required; no purchase.",
+        "rules_used": [
+          "standard_cap",
+          "cap_escalation"
+        ]
+      },
+      "hindsight_min": null,
+      "regret": null
+    },
+    {
+      "night": 1,
+      "tick": 8,
+      "trip_id": "rohan_sfo_ord",
+      "price": 312,
+      "decision": {
+        "action": "WAIT",
+        "reason": "Watching for a fare on December 2 or 4 within the customer cap.",
+        "rules_used": [
+          "banned_dates",
+          "standard_cap"
+        ]
+      },
+      "hindsight_min": null,
+      "regret": null
+    },
+    {
+      "night": 1,
+      "tick": 8,
+      "trip_id": "priya_bos_sfo",
+      "price": 391,
+      "decision": {
+        "action": "ESCALATE",
+        "reason": "Offsite fare exceeds the $300 cap. Human approval required; no purchase.",
+        "rules_used": [
+          "standard_cap",
+          "cap_escalation"
+        ]
+      },
+      "hindsight_min": null,
+      "regret": null
+    },
+    {
+      "night": 1,
+      "tick": 9,
+      "trip_id": "rohan_sfo_ord",
+      "price": 311,
+      "decision": {
+        "action": "WAIT",
+        "reason": "Watching for a fare on December 2 or 4 within the customer cap.",
+        "rules_used": [
+          "banned_dates",
+          "standard_cap"
+        ]
+      },
+      "hindsight_min": null,
+      "regret": null
+    },
+    {
+      "night": 1,
+      "tick": 9,
+      "trip_id": "priya_bos_sfo",
+      "price": 388,
+      "decision": {
+        "action": "ESCALATE",
+        "reason": "Offsite fare exceeds the $300 cap. Human approval required; no purchase.",
+        "rules_used": [
+          "standard_cap",
+          "cap_escalation"
+        ]
+      },
+      "hindsight_min": null,
+      "regret": null
+    },
+    {
+      "night": 1,
+      "tick": 10,
+      "trip_id": "rohan_sfo_ord",
+      "price": 210,
+      "decision": {
+        "action": "WAIT",
+        "reason": "Refused the $210 December 3 fare: Rohan is unavailable that day.",
+        "rules_used": [
+          "banned_dates",
+          "standard_cap"
+        ]
+      },
+      "hindsight_min": null,
+      "regret": null
+    },
+    {
+      "night": 1,
+      "tick": 10,
+      "trip_id": "priya_bos_sfo",
+      "price": 385,
+      "decision": {
+        "action": "ESCALATE",
+        "reason": "Offsite fare exceeds the $300 cap. Human approval required; no purchase.",
+        "rules_used": [
+          "standard_cap",
+          "cap_escalation"
+        ]
+      },
+      "hindsight_min": null,
+      "regret": null
+    },
+    {
+      "night": 1,
+      "tick": 11,
+      "trip_id": "rohan_sfo_ord",
+      "price": 309,
+      "decision": {
+        "action": "WAIT",
+        "reason": "Watching for a fare on December 2 or 4 within the customer cap.",
+        "rules_used": [
+          "banned_dates",
+          "standard_cap"
+        ]
+      },
+      "hindsight_min": null,
+      "regret": null
+    },
+    {
+      "night": 1,
+      "tick": 11,
+      "trip_id": "priya_bos_sfo",
+      "price": 382,
+      "decision": {
+        "action": "ESCALATE",
+        "reason": "Offsite fare exceeds the $300 cap. Human approval required; no purchase.",
+        "rules_used": [
+          "standard_cap",
+          "cap_escalation"
+        ]
+      },
+      "hindsight_min": null,
+      "regret": null
+    },
+    {
+      "night": 1,
+      "tick": 12,
+      "trip_id": "rohan_sfo_ord",
+      "price": 308,
+      "decision": {
+        "action": "WAIT",
+        "reason": "Watching for a fare on December 2 or 4 within the customer cap.",
+        "rules_used": [
+          "banned_dates",
+          "standard_cap"
+        ]
+      },
+      "hindsight_min": null,
+      "regret": null
+    },
+    {
+      "night": 1,
+      "tick": 12,
+      "trip_id": "priya_bos_sfo",
+      "price": 379,
+      "decision": {
+        "action": "ESCALATE",
+        "reason": "Offsite fare exceeds the $300 cap. Human approval required; no purchase.",
+        "rules_used": [
+          "standard_cap",
+          "cap_escalation"
+        ]
+      },
+      "hindsight_min": null,
+      "regret": null
+    },
+    {
+      "night": 1,
+      "tick": 13,
+      "trip_id": "rohan_sfo_ord",
+      "price": 307,
+      "decision": {
+        "action": "WAIT",
+        "reason": "Watching for a fare on December 2 or 4 within the customer cap.",
+        "rules_used": [
+          "banned_dates",
+          "standard_cap"
+        ]
+      },
+      "hindsight_min": null,
+      "regret": null
+    },
+    {
+      "night": 1,
+      "tick": 13,
+      "trip_id": "priya_bos_sfo",
+      "price": 376,
+      "decision": {
+        "action": "ESCALATE",
+        "reason": "Offsite fare exceeds the $300 cap. Human approval required; no purchase.",
+        "rules_used": [
+          "standard_cap",
+          "cap_escalation"
+        ]
+      },
+      "hindsight_min": null,
+      "regret": null
+    },
+    {
+      "night": 1,
+      "tick": 14,
+      "trip_id": "rohan_sfo_ord",
+      "price": 306,
+      "decision": {
+        "action": "WAIT",
+        "reason": "Watching for a fare on December 2 or 4 within the customer cap.",
+        "rules_used": [
+          "banned_dates",
+          "standard_cap"
+        ]
+      },
+      "hindsight_min": null,
+      "regret": null
+    },
+    {
+      "night": 1,
+      "tick": 14,
+      "trip_id": "priya_bos_sfo",
+      "price": 373,
+      "decision": {
+        "action": "ESCALATE",
+        "reason": "Offsite fare exceeds the $300 cap. Human approval required; no purchase.",
+        "rules_used": [
+          "standard_cap",
+          "cap_escalation"
+        ]
+      },
+      "hindsight_min": null,
+      "regret": null
+    },
+    {
+      "night": 1,
+      "tick": 15,
+      "trip_id": "rohan_sfo_ord",
+      "price": 305,
+      "decision": {
+        "action": "WAIT",
+        "reason": "Watching for a fare on December 2 or 4 within the customer cap.",
+        "rules_used": [
+          "banned_dates",
+          "standard_cap"
+        ]
+      },
+      "hindsight_min": null,
+      "regret": null
+    },
+    {
+      "night": 1,
+      "tick": 15,
+      "trip_id": "priya_bos_sfo",
+      "price": 370,
+      "decision": {
+        "action": "ESCALATE",
+        "reason": "Offsite fare exceeds the $300 cap. Human approval required; no purchase.",
+        "rules_used": [
+          "standard_cap",
+          "cap_escalation"
+        ]
+      },
+      "hindsight_min": null,
+      "regret": null
+    },
+    {
+      "night": 1,
+      "tick": 16,
+      "trip_id": "rohan_sfo_ord",
+      "price": 304,
+      "decision": {
+        "action": "WAIT",
+        "reason": "Watching for a fare on December 2 or 4 within the customer cap.",
+        "rules_used": [
+          "banned_dates",
+          "standard_cap"
+        ]
+      },
+      "hindsight_min": null,
+      "regret": null
+    },
+    {
+      "night": 1,
+      "tick": 16,
+      "trip_id": "priya_bos_sfo",
+      "price": 367,
+      "decision": {
+        "action": "ESCALATE",
+        "reason": "Offsite fare exceeds the $300 cap. Human approval required; no purchase.",
+        "rules_used": [
+          "standard_cap",
+          "cap_escalation"
+        ]
+      },
+      "hindsight_min": null,
+      "regret": null
+    },
+    {
+      "night": 1,
+      "tick": 17,
+      "trip_id": "rohan_sfo_ord",
+      "price": 303,
+      "decision": {
+        "action": "WAIT",
+        "reason": "Watching for a fare on December 2 or 4 within the customer cap.",
+        "rules_used": [
+          "banned_dates",
+          "standard_cap"
+        ]
+      },
+      "hindsight_min": null,
+      "regret": null
+    },
+    {
+      "night": 1,
+      "tick": 17,
+      "trip_id": "priya_bos_sfo",
+      "price": 370,
+      "decision": {
+        "action": "ESCALATE",
+        "reason": "Offsite fare exceeds the $300 cap. Human approval required; no purchase.",
+        "rules_used": [
+          "standard_cap",
+          "cap_escalation"
+        ]
+      },
+      "hindsight_min": null,
+      "regret": null
+    },
+    {
+      "night": 1,
+      "tick": 18,
+      "trip_id": "rohan_sfo_ord",
+      "price": 278,
+      "decision": {
+        "action": "BUY",
+        "reason": "Eligible December 4 fare is within the $300 cap.",
+        "rules_used": [
+          "banned_dates",
+          "standard_cap"
+        ]
+      },
+      "hindsight_min": 278,
+      "regret": 0
+    },
+    {
+      "night": 1,
+      "tick": 18,
+      "trip_id": "priya_bos_sfo",
+      "price": 373,
+      "decision": {
+        "action": "ESCALATE",
+        "reason": "Offsite fare exceeds the $300 cap. Human approval required; no purchase.",
+        "rules_used": [
+          "standard_cap",
+          "cap_escalation"
+        ]
+      },
+      "hindsight_min": null,
+      "regret": null
+    },
+    {
+      "night": 1,
+      "tick": 19,
+      "trip_id": "priya_bos_sfo",
+      "price": 376,
+      "decision": {
+        "action": "ESCALATE",
+        "reason": "Offsite fare exceeds the $300 cap. Human approval required; no purchase.",
+        "rules_used": [
+          "standard_cap",
+          "cap_escalation"
+        ]
+      },
+      "hindsight_min": null,
+      "regret": null
+    },
+    {
+      "night": 1,
+      "tick": 20,
+      "trip_id": "priya_bos_sfo",
+      "price": 379,
+      "decision": {
+        "action": "ESCALATE",
+        "reason": "Offsite fare exceeds the $300 cap. Human approval required; no purchase.",
+        "rules_used": [
+          "standard_cap",
+          "cap_escalation"
+        ]
+      },
+      "hindsight_min": null,
+      "regret": null
+    },
+    {
+      "night": 1,
+      "tick": 21,
+      "trip_id": "priya_bos_sfo",
+      "price": 382,
+      "decision": {
+        "action": "ESCALATE",
+        "reason": "Offsite fare exceeds the $300 cap. Human approval required; no purchase.",
+        "rules_used": [
+          "standard_cap",
+          "cap_escalation"
+        ]
+      },
+      "hindsight_min": null,
+      "regret": null
+    },
+    {
+      "night": 1,
+      "tick": 22,
+      "trip_id": "priya_bos_sfo",
+      "price": 385,
+      "decision": {
+        "action": "ESCALATE",
+        "reason": "Offsite fare exceeds the $300 cap. Human approval required; no purchase.",
+        "rules_used": [
+          "standard_cap",
+          "cap_escalation"
+        ]
+      },
+      "hindsight_min": null,
+      "regret": null
+    },
+    {
+      "night": 1,
+      "tick": 23,
+      "trip_id": "priya_bos_sfo",
+      "price": 388,
+      "decision": {
+        "action": "ESCALATE",
+        "reason": "Offsite fare exceeds the $300 cap. Human approval required; no purchase.",
+        "rules_used": [
+          "standard_cap",
+          "cap_escalation"
+        ]
+      },
+      "hindsight_min": null,
+      "regret": null
+    },
+    {
+      "night": 1,
+      "tick": 24,
+      "trip_id": "priya_bos_sfo",
+      "price": 391,
+      "decision": {
+        "action": "ESCALATE",
+        "reason": "Offsite fare exceeds the $300 cap. Human approval required; no purchase.",
+        "rules_used": [
+          "standard_cap",
+          "cap_escalation"
+        ]
+      },
+      "hindsight_min": null,
+      "regret": null
+    },
+    {
+      "night": 1,
+      "tick": 25,
+      "trip_id": "priya_bos_sfo",
+      "price": 394,
+      "decision": {
+        "action": "ESCALATE",
+        "reason": "Offsite fare exceeds the $300 cap. Human approval required; no purchase.",
+        "rules_used": [
+          "standard_cap",
+          "cap_escalation"
+        ]
+      },
+      "hindsight_min": null,
+      "regret": null
+    },
+    {
+      "night": 1,
+      "tick": 26,
+      "trip_id": "priya_bos_sfo",
+      "price": 397,
+      "decision": {
+        "action": "ESCALATE",
+        "reason": "Offsite fare exceeds the $300 cap. Human approval required; no purchase.",
+        "rules_used": [
+          "standard_cap",
+          "cap_escalation"
+        ]
+      },
+      "hindsight_min": null,
+      "regret": null
+    },
+    {
+      "night": 1,
+      "tick": 27,
+      "trip_id": "priya_bos_sfo",
+      "price": 400,
+      "decision": {
+        "action": "ESCALATE",
+        "reason": "Offsite fare exceeds the $300 cap. Human approval required; no purchase.",
+        "rules_used": [
+          "standard_cap",
+          "cap_escalation"
+        ]
+      },
+      "hindsight_min": null,
+      "regret": null
+    },
+    {
+      "night": 1,
+      "tick": 28,
+      "trip_id": "priya_bos_sfo",
+      "price": 403,
+      "decision": {
+        "action": "ESCALATE",
+        "reason": "Offsite fare exceeds the $300 cap. Human approval required; no purchase.",
+        "rules_used": [
+          "standard_cap",
+          "cap_escalation"
+        ]
+      },
+      "hindsight_min": null,
+      "regret": null
+    },
+    {
+      "night": 1,
+      "tick": 29,
+      "trip_id": "priya_bos_sfo",
+      "price": 406,
+      "decision": {
+        "action": "ESCALATE",
+        "reason": "Offsite fare exceeds the $300 cap. Human approval required; no purchase.",
+        "rules_used": [
+          "standard_cap",
+          "cap_escalation"
+        ]
+      },
+      "hindsight_min": null,
+      "regret": null
+    },
+    {
+      "night": 1,
+      "tick": 30,
+      "trip_id": "priya_bos_sfo",
+      "price": 409,
+      "decision": {
+        "action": "ESCALATE",
+        "reason": "Offsite fare exceeds the $300 cap. Human approval required; no purchase.",
+        "rules_used": [
+          "standard_cap",
+          "cap_escalation"
+        ]
+      },
+      "hindsight_min": null,
+      "regret": null
+    },
+    {
+      "night": 1,
+      "tick": 31,
+      "trip_id": "priya_bos_sfo",
+      "price": 412,
+      "decision": {
+        "action": "ESCALATE",
+        "reason": "Offsite fare exceeds the $300 cap. Human approval required; no purchase.",
+        "rules_used": [
+          "standard_cap",
+          "cap_escalation"
+        ]
+      },
+      "hindsight_min": null,
+      "regret": null
+    }
+  ],
+  "lessons": [
+    "Illustrative lesson: in this simulated Night 1, SFO\u2013JFK fell from $412 to $287 after midnight. Watch longer when the dates and cap allow it. This is fixture text, not a Cognee result."
+  ]
+}
