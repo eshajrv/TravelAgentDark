@@ -9,12 +9,13 @@ COLORS = {"BUY": "#087F88", "WAIT": "#6256C9", "ESCALATE": "#C64238"}
 CSS = """<style>
 :root {--ink:#142D4E;--muted:#526984;--blue:#1269DE;--line:#DCE6EF}
 .stApp {background:#F5F8FC;color:var(--ink)}
-.block-container {max-width:1460px;padding:1.8rem 2.7rem 3rem}
+.block-container {max-width:1460px;padding:4.5rem 2.7rem 3rem}
 h1,h2,h3,h4 {color:var(--ink);letter-spacing:-.035em}
 h2 {font-size:1.4rem!important;font-weight:700!important}
 h3 {font-size:1.18rem!important;font-weight:650!important}
 h4 {font-size:1rem!important}
 p,label {font-size:.89rem!important;line-height:1.55}
+[data-testid="stCaptionContainer"] {opacity:1!important;color:var(--muted)!important}
 [data-testid="stCaptionContainer"] p {font-size:.77rem!important;color:var(--muted);line-height:1.5}
 [data-testid="stSidebar"] {background:#EAF1FB;border-right:1px solid #D6E3F2;min-width:230px;max-width:260px}
 [data-testid="stSidebar"] .block-container {padding-top:1.5rem}
@@ -52,7 +53,7 @@ button[kind="secondary"]:hover {background:#E6F0FF;border-color:#1269DE;color:#1
 .ticket.violet {--ticket-accent:#6450B1;--ticket-wash:#ECE6FD}
 .ticket-top {background:var(--ticket-wash);color:var(--ticket-accent);padding:12px 17px;display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:.65rem;letter-spacing:.07em;text-transform:uppercase;font-weight:700}
 .ticket-top strong {font-size:.9rem;letter-spacing:0;text-transform:none;color:#142D4E}
-.ticket-body {padding:19px 18px 16px}
+.ticket-body {padding:19px 18px 16px;min-height:174px}
 .airport-route {display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:17px}
 .airport {font-size:1.9rem;font-weight:750;letter-spacing:-.04em;line-height:1.1}
 .airport small {display:block;font-size:.6rem;font-weight:600;letter-spacing:.1em;color:#60758B;margin-top:6px}
@@ -65,10 +66,10 @@ button[kind="secondary"]:hover {background:#E6F0FF;border-color:#1269DE;color:#1
 .ticket-footer::before {left:-9px}.ticket-footer::after {right:-9px}
 .status-pill {display:inline-block;border-radius:5px;background:#E4F3EF;color:#116751;padding:4px 8px;font-size:.7rem;font-weight:700;margin-bottom:8px}
 .status-pill.wait {background:#EDE8FC;color:#5C49AA}.status-pill.escalate {background:#FFE6DE;color:#A7372E}
-.ticket-reason {font-size:.75rem;color:#526984;line-height:1.5;margin:0;overflow-wrap:anywhere}
-.st-key-lessons [data-testid="stVerticalBlockBorderWrapper"] {background:#F0EBFE;border-color:#DCD2F7!important}
-@media(max-width:1100px){.block-container{padding:1.5rem 1.5rem 3rem}.flight-hero h1{font-size:2.35rem!important}.hero-copy{padding:28px}.airport{font-size:1.6rem}.ticket-top{flex-wrap:wrap}}
-@media(max-width:700px){.block-container{padding:1rem}.desk-badge{display:none}.flight-hero{min-height:235px}.hero-copy{width:76%;padding:24px}.hero-art{width:58%;opacity:.3;right:-15%}.flight-hero h1{font-size:2.25rem!important}.flight-hero p{max-width:270px}.st-key-summary_metrics [data-testid="stMetric"]{min-height:95px;padding:13px 16px}[data-baseweb="tab-list"]{gap:1.1rem}.airport{font-size:2rem}}
+.ticket-reason {font-size:.78rem!important;color:#526984;line-height:1.5;margin:0;overflow-wrap:anywhere}
+.st-key-lessons {background:#F0EBFE;border:1px solid #DCD2F7;border-radius:14px;padding:18px}
+@media(max-width:1100px){.block-container{padding:4.5rem 1.5rem 3rem}.flight-hero h1{font-size:2.35rem!important}.hero-copy{padding:28px}.airport{font-size:1.6rem}.ticket-top{flex-wrap:wrap}}
+@media(max-width:700px){.block-container{padding:4rem 1rem 2rem}.desk-badge{display:none}.flight-hero{min-height:235px}.hero-copy{width:76%;padding:24px}.hero-art{width:58%;opacity:.3;right:-15%}.flight-hero h1{font-size:2.25rem!important}.flight-hero p{max-width:270px}.st-key-summary_metrics [data-testid="stMetric"]{min-height:95px;padding:13px 16px}[data-baseweb="tab-list"]{gap:1.1rem}.airport{font-size:2rem}}
 </style>"""
 
 

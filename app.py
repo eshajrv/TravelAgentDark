@@ -126,7 +126,7 @@ with overview:
                     st.dataframe(pd.DataFrame(rejected)[["tick","date","price","rules"]],hide_index=True,width="stretch")
     with lesson_col:
         st.subheader("Lessons & follow-up")
-        with st.container(border=True, key="lessons"):
+        with st.container(key="lessons"):
             st.caption("ILLUSTRATIVE LESSONS" if demo else "EXPORTED LESSONS / " + night.metadata.get("memory_mode", "source not supplied"))
             if tick < 31:
                 st.write("End-of-night lessons appear when the replay finishes.")
