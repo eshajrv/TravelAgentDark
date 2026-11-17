@@ -45,3 +45,18 @@ Official references: https://docs.link.com/quickstart/overview and https://docs.
 Night 2 uses new fares and retains Night 1 bookings. Mock replacement atomically refunds/replaces only while free cancellation remains valid. Link mode never performs remote refunds or purchases. Hindsight excludes invalid offers and unpaid decisions. First-night lows are observations, not proof of a reliable route trend.
 
 One process holds the state lock. External memory logging is at-least-once across a crash at the acknowledgement boundary; Esha should deduplicate by night/tick/trip. Payment operations have separate durable keys. The engine batches Cognee trace delivery after observation ticks; UI snapshots are written every tick. Native Cognee integration awaits Esha's module and API configuration. Optional Jinko is intentionally deferred.
+
+## Local Cognee environment and regression checks
+
+The local `.venv` uses Python 3.12 with Cognee 1.6.8. `requirements-engine.lock.txt` records the installed engine/test dependency versions (macOS arm64); the shared requirements.txt is unchanged.
+
+```sh
+source .venv/bin/activate
+python -m pytest tests -q
+python scripts/check_cognee.py
+python scripts/check_cognee.py --run
+```
+
+The first Cognee command checks import/signature compatibility only. `--run` calls configured LLM/embedding services using a unique smoke-test dataset and never calls `forget`. Set `LLM_API_KEY` and the team's `LLM_MODEL` in a local `.env`; the runner loads it without overriding exported environment variables. No API key is bundled. Native `memory.py` remains Esha's handoff; installing Cognee does not implement that wrapper.
+
+Payment reconciliation now rebuilds morning escalations. Approved requests remove stale pending warnings without creating bookings. Denied/expired requests require explicit retry authorization; use a new run only after that authorization. Twelve offline tests pass, including async memory compatibility. Full two-night exports were read by Aman's current ui_data.py: 96 traces and three trips per night, no parser warnings. The UI still needs to render additive execution/payment fields and respect memory_mode when labeling lessons.

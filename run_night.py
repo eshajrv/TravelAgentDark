@@ -22,6 +22,33 @@ from sim.fares import get_offers
 from state import State
 
 
+def load_configuration():
+    """Load the repo-local .env without overriding exported settings."""
+    try:
+        from dotenv import load_dotenv
+    except ImportError:
+        return  # Dependency-free offline fixture still works.
+    load_dotenv(Path(__file__).resolve().parent / '.env', override=False)
+
+
+def refresh_escalations(snapshot, state):
+    booked = {b['trip_id'] for b in state.all('booking')}
+    items = {}
+    for trace in snapshot['traces']:
+        if trace['decision']['action'] == 'ESCALATE' and trace['trip_id'] not in booked:
+            items[trace['trip_id']] = {'trip_id': trace['trip_id'], 'reason': trace['decision']['reason']}
+    for op in state.all('operation'):
+        if op['offer']['night'] != snapshot['night']:
+            continue
+        tid = op['offer']['trip_id']
+        if op['status'] in {'pending','unknown','creating','denied','expired'}:
+            items[tid] = {'trip_id': tid, 'reason': 'Spend request ' + op['status'],
+                          'approval_url': (op.get('checkout') or {}).get('url')}
+        elif op['status'] in {'approved','booked'}:
+            items.pop(tid, None)
+    snapshot['escalations'] = list(items.values())
+
+
 async def call(fn, *args):
     value = fn(*args)
     return await value if inspect.isawaitable(value) else value
@@ -122,7 +149,10 @@ async def run_night_async(night, *, state, memory, backend, output_dir='output',
             booking = state.booking(trip.id)
             pending = state.pending(trip.id)
             context = ''
-            if pending:
+            terminal = next((op for op in state.all('operation') if op['offer']['trip_id']==trip.id and op['status'] in {'denied','expired'}),None)
+            if terminal:
+                decision = Decision('ESCALATE','Earlier request denied/expired; explicit retry authorization required',['approval_required'])
+            elif pending:
                 decision = Decision('WAIT','Existing checkout requires payment/reconciliation',['pending_checkout'])
             elif booking and booking['night']==night:
                 decision = Decision('WAIT','Already booked this night; observing fares for hindsight',['already_booked'])
@@ -176,6 +206,13 @@ async def run_night_async(night, *, state, memory, backend, output_dir='output',
             checkpoint()
             return snapshot
 
+    # Recover execution evidence if a crash occurred after booking but before a tick export.
+    known={e['id'] for e in snapshot['execution_events']}
+    for op in state.all('operation'):
+        if op['offer']['night']==night and op['id'] not in known:
+            indices=[i for i,t in enumerate(snapshot['traces']) if t['trip_id']==op['offer']['trip_id'] and t['tick']==op['offer']['tick']]
+            if indices:
+                snapshot['execution_events'].append(event_from(op,indices[0]))
     grade_snapshot(snapshot)
     # Esha can read this evidence file or implement optional prepare_hindsight.
     snapshot['status']='grading'
@@ -191,16 +228,7 @@ async def run_night_async(night, *, state, memory, backend, output_dir='output',
     except Exception as exc:
         snapshot['errors'].append({'component':'end_night','error':type(exc).__name__})
         snapshot['status']='learning_failed'
-    booked = {b['trip_id'] for b in state.all('booking')}
-    escalations = {}
-    for trace in snapshot['traces']:
-        if trace['decision']['action']=='ESCALATE' and trace['trip_id'] not in booked:
-            escalations[trace['trip_id']]={'trip_id':trace['trip_id'],'reason':trace['decision']['reason']}
-    for op in state.all('operation'):
-        if op['status'] in {'pending','unknown','creating','denied','expired'}:
-            tid=op['offer']['trip_id']
-            escalations[tid]={'trip_id':tid,'reason':'Spend request '+op['status'],'approval_url':(op.get('checkout') or {}).get('url')}
-    snapshot['escalations']=list(escalations.values())
+    refresh_escalations(snapshot,state)
     checkpoint()
     return snapshot
 
@@ -208,6 +236,7 @@ async def run_night_async(night, *, state, memory, backend, output_dir='output',
 def run_night(night: int, *, memory=None, backend=None, state_path='output/engine.sqlite3',
               run_id='default', output_dir='output', seed=17, demo=False, decision_provider=decide) -> list[Trace]:
     """Synchronous contract; async callers should use run_night_async directly."""
+    load_configuration()
     with runner_lock(state_path):
         state = State(state_path,run_id)
         try:
@@ -249,6 +278,7 @@ def reconcile(state, backend, output_dir):
             event.update(op)
         snapshot['bookings']=state.all('booking')
         grade_snapshot(snapshot)
+        refresh_escalations(snapshot,state)
         # Newly completed payments require fresh grading/learning on rerun.
         if any(x['status']=='booked' for x in changed):
             snapshot['status']='needs_regrading'
@@ -259,6 +289,7 @@ def reconcile(state, backend, output_dir):
 
 
 def main():
+    load_configuration()
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--night',type=int,default=1)
     parser.add_argument('--nights',type=int,nargs='+')
